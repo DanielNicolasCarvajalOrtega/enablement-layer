@@ -1,0 +1,12 @@
+fastapi>=0.141
+uvicorn[standard]>=0.54
+mcp<2
+fastmcp>=2.14,<3
+oracledb>=26
+pydantic>=2.13
+pydantic-settings>=2.15
+structlog>=26
+
+# dev / test
+pytest>=9
+httpx>=0.28

@@ -1,0 +1,36 @@
+# === Entornos y secretos ===
+.venv/
+venv/
+env/
+.env
+.env.*
+!.env.example
+
+# === Caches y artefactos Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+dist/
+build/
+
+# === Logs ===
+*.log
+.server.log
+
+# === Sistema / editor ===
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# === Herramientas locales de desarrollo ===
+.playwright-mcp/
+
+# === Tokens locales ===
+.mcp-token
