@@ -1,0 +1,86 @@
+
+
+
+Atte
+Rodrigo Mansilla
+
+￼
+
+> Inicio del mensaje reenviado:
+> 
+> De: info@ino.cl
+> Asunto: Resumen Control (Agenda) 23/09/2026
+> Fecha: 23 de septiembre de 2026 a las 10:31:05 p.m. CLST
+> Para: rodrigolp60@hotmail.com, claudio.perez@ino.cl, rodrigo.mansilla@ino.cl, ricardo.fonfria@ino.cl, maria.isabel.pizarro@ino.cl
+> 
+> 
+> Estado de citas hoy 
+> Estado 	Cantidad 
+> Asignado 	3 
+> Derivada 	10 
+> Reservada 	1 
+> Reservada 	514 
+> Suspendida 	22 
+> Bloqueo 	19.617 
+> Terminada 	1.920 
+> TOTAL 	22.087 
+> 
+> 
+> N° Pacientes agendados para mañana
+> Estado 	Cantidad 
+> Reservada 	2.108 
+> 
+> 
+> Citas Por tipo Prevision
+> Prevision	Cantidad
+> CONVENIO FAMILIAR FUNCIONARIO V1 	3 
+> FONASA B 	2 
+> FONASA B3 	1 
+> ISAPRE 3 	2 
+> PACK 6 TELEORTODONCIA INO 	4 
+> PRIMERA FASE V1 ESTETICO 	9 
+> PRIMERA FASE V1 LINGUAL 	2 
+> PRIMERA FASE V1 ORTOPERIODONTAL 	6 
+> PRIMERA FASE V1 QUIRURGICO 	21 
+> PRIMERA FASE V1 TRADICIONAL 	101 
+> PRIMERA FASE V2 INVISIBLE 	3 
+> PRIMERA FASE V2 PEDIATRICO 	1 
+> PROMO MAYO 2018 	126 
+> PROMO_200/16 	1 
+> PROMO_200/18 	1 
+> VALOR UNICO ESTETICO CERAMICA 2 	2 
+> 2022 BRACKET ESTETICO V2 	1 
+> 2022 Bracket Metálico 	14 
+> 2022 BRACKET METALICO CONVENIOS V2 	25 
+> 2022 Bracket Metálico Promo Inmediata 	13 
+> 2022 BRACKET METALICO PROMO INMEDIATA V2 	72 
+> 2022 BRACKET METALICO V2 	442 
+> 2022 Ortodoncia Invisible Alineadores 	1 
+> 2022 ORTODONCIA INVISIBLE ALINEADORES V2 	18 
+> 2022 Ortodoncia Ortoperiodontal 	25 
+> 2022 ORTODONCIA PEDIATRICO V2 	17 
+> 2022 Ortodoncia Quirúrgico 	30 
+> 2022 PACK 6 ALINEADOR.CL V2 	1 
+> 2022 TELEORTODONCIA V2 	3 
+> 2024 BRACKET ESTETICO 	8 
+> 2024 BRACKET METALICO 	982 
+> 2024 BRACKET METALICO CONVENIOS 	74 
+> 2024 BRACKET METALICO FAMILIAR FUNCIONARIO 	2 
+> 2024 BRACKET METALICO PROMO INMEDIATA 	309 
+> 2024 ORTODONCIA ALINEADORES 	31 
+> 2024 ORTODONCIA ORTOPERIODONTAL 	35 
+> 2024 ORTODONCIA PEDIATRICO 	54 
+> 2024 ORTODONCIA QUIRURGICO 	20 
+> 2024 PACK 6 ALINEADOR.CL 	1 
+> 2025 BRACKET METÁLICO + LIMPIEZA 	1 
+> 2025 ORTODONCIA QUIRURGICO + LIMPIEZA 	1 
+> 2026 ORTODONCIA ORTOPERIODONTAL 	6 
+> TOTAL 	2.471 
+
+
+-- 
+Este correo electrónico contiene información legal confidencial y 
+privilegiada. Si Usted no es el destinatario a quien se desea enviar este 
+mensaje, tendrá prohibido darlo a conocer a persona alguna, así como a 
+reproducirlo o copiarlo. Si recibe este mensaje por error, favor de 
+notificarlo al remitente de inmediato y desecharlo de su sistema.

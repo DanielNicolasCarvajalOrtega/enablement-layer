@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Estrategia de compra Claude</title>
+<style>
+:root{
+  --bg:#F5F7F8; --panel:#FFFFFF; --ink:#0F2A2E; --muted:#5B7278;
+  --line:#DCE4E5; --teal:#0E7C86; --teal-dk:#0A5F67; --amber:#B4640A;
+  --indigo:#4C4CB0; --good:#1E7A4C; --warn-bg:#FBF1E3; --warn-line:#E8CFA3;
+  --rec-bg:#EAF4F2;
+  padding-top: env(safe-area-inset-top,0px); padding-bottom: env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1618; --panel:#152124; --ink:#EAF3F2; --muted:#93ACAF;
+    --line:#26383B; --teal:#37B7B0; --teal-dk:#2C9992; --amber:#E0A24C;
+    --indigo:#9494E0; --good:#4FC384; --warn-bg:#2A2314; --warn-line:#4A3B1C;
+    --rec-bg:#122423;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1618; --panel:#152124; --ink:#EAF3F2; --muted:#93ACAF;
+  --line:#26383B; --teal:#37B7B0; --teal-dk:#2C9992; --amber:#E0A24C;
+  --indigo:#9494E0; --good:#4FC384; --warn-bg:#2A2314; --warn-line:#4A3B1C;
+  --rec-bg:#122423;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.45;
+}
+.wrap{max-width:1040px;margin:0 auto;padding:32px 20px 80px}
+header.top{margin-bottom:28px}
+h1{font-size:26px;margin:0 0 6px;letter-spacing:-.01em}
+.sub{color:var(--muted);font-size:15px;max-width:640px}
+h2{font-size:17px;margin:0 0 14px}
+.grid-calc{display:grid;grid-template-columns:1.1fr 1fr;gap:20px}
+@media (max-width:760px){.grid-calc{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:22px}
+.group{margin-bottom:18px}
+.group-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+.group-head label{font-weight:600;font-size:14px}
+.group-row{display:flex;gap:10px;align-items:center}
+input[type=number]{
+  width:64px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;
+  background:var(--bg);color:var(--ink);font-size:14px;
+}
+input[type=range]{flex:1;accent-color:var(--teal)}
+select{
+  padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);
+  color:var(--ink);font-size:13px;
+}
+.hint{font-size:12px;color:var(--muted);margin-top:2px}
+.toggle-row{display:flex;align-items:center;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
+.toggle-row input{accent-color:var(--teal);width:16px;height:16px}
+.toggle-row span{font-size:14px}
+.billing-seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-top:6px;width:fit-content}
+.billing-seg button{
+  border:none;background:var(--panel);color:var(--ink);padding:6px 14px;font-size:13px;cursor:pointer;
+}
+.billing-seg button.active{background:var(--teal);color:#fff}
+.api-row{margin-top:18px}
+.api-row .group-row{gap:12px}
+
+.results{display:flex;flex-direction:column;gap:14px}
+.plan-card{border:1px solid var(--line);border-radius:10px;padding:18px;background:var(--panel)}
+.plan-card.recommended{border-color:var(--teal);background:var(--rec-bg)}
+.plan-card .ptitle{display:flex;justify-content:space-between;align-items:baseline}
+.plan-card .ptitle b{font-size:15px}
+.badge{font-size:11px;background:var(--teal);color:#fff;padding:2px 8px;border-radius:20px}
+.pricebox{display:flex;gap:22px;margin:10px 0 8px}
+.pricebox div span{display:block}
+.pricebox .amount{font-size:20px;font-weight:700}
+.pricebox .label{font-size:11px;color:var(--muted)}
+.breakdown{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:8px;margin-top:6px}
+.breakdown div{display:flex;justify-content:space-between;padding:2px 0}
+
+.recbox{
+  border:1px solid var(--teal);background:var(--rec-bg);border-radius:10px;padding:18px 20px;margin-top:20px;
+}
+.recbox h3{margin:0 0 8px;font-size:15px;color:var(--teal-dk)}
+.recbox p{margin:0;font-size:14px}
+
+table.cmp{width:100%;border-collapse:collapse;margin-top:10px;font-size:13.5px}
+table.cmp th, table.cmp td{border:1px solid var(--line);padding:8px 10px;text-align:left}
+table.cmp th{background:var(--panel);font-weight:600}
+table.cmp td.yes{color:var(--good)}
+table.cmp td.no{color:var(--muted)}
+.scroller{overflow-x:auto}
+
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:16px}
+@media (max-width:760px){.cards{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px}
+.card h3{margin:0 0 8px;font-size:14.5px;display:flex;align-items:center;gap:8px}
+.tag{font-size:10.5px;padding:2px 7px;border-radius:20px;background:var(--line);color:var(--ink)}
+.tag.teal{background:var(--teal);color:#fff}
+.tag.amber{background:var(--amber);color:#fff}
+.card p, .card li{font-size:13.3px;color:var(--muted);margin:4px 0}
+.card ul{margin:6px 0 0;padding-left:18px}
+.tip{background:var(--warn-bg);border:1px solid var(--warn-line)}
+.warn-text{color:var(--amber);font-weight:600}
+.ok-text{color:var(--good);font-weight:600}
+
+section{margin-top:36px}
+footer{margin-top:40px;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>Estrategia de compra: planes Claude</h1>
+  <p class="sub">Ajusta la dotación de personas y cómo las quieres licenciar. La página recalcula el costo de Team vs Enterprise y te dice cuál conviene y por qué.</p>
+</header>
+
+<section class="grid-calc">
+  <div class="panel">
+    <h2>Dotación</h2>
+
+    <div class="group" data-group="ti">
+      <div class="group-head"><label>Equipo de TI (refactor Java, agentes, MCP)</label><input type="number" id="n-ti" min="0" max="150" value="11"></div>
+      <div class="group-row"><input type="range" id="r-ti" min="0" max="150" value="11">
+        <select id="s-ti"><option value="premium" selected>Premium</option><option value="standard">Standard</option></select></div>
+      <div class="hint">Uso intensivo de Claude Code → sugerido Premium.</div>
+    </div>
+
+    <div class="group" data-group="ger">
+      <div class="group-head"><label>Gerencias</label><input type="number" id="n-ger" min="0" max="150" value="10"></div>
+      <div class="group-row"><input type="range" id="r-ger" min="0" max="150" value="10">
+        <select id="s-ger"><option value="standard" selected>Standard</option><option value="premium">Premium</option></select></div>
+      <div class="hint">Uso de chat, docs, análisis puntual → sugerido Standard.</div>
+    </div>
+
+    <div class="group" data-group="usr">
+      <div class="group-head"><label>Usuarios generales</label><input type="number" id="n-usr" min="0" max="150" value="20"></div>
+      <div class="group-row"><input type="range" id="r-usr" min="0" max="150" value="20">
+        <select id="s-usr"><option value="standard" selected>Standard</option><option value="premium">Premium</option></select></div>
+      <div class="hint">Uso ocasional → sugerido Standard.</div>
+    </div>
+
+    <div class="toggle-row">
+      <input type="checkbox" id="sensibles" checked>
+      <span>Van a procesar datos de pacientes / información sensible</span>
+    </div>
+
+    <div class="hint" id="combo-note" style="margin-top:8px">El combo Standard/Premium de cada grupo solo cambia el precio en <b>Team</b>. En <b>Enterprise</b> todos los asientos cuestan $20/mes; ahí lo que sube o baja el costo es el consumo de API.</div>
+
+    <div class="group api-row">
+      <div class="group-head"><label>Gasto API estimado (agentes/MCP/RAG)</label><input type="number" id="n-api" min="0" max="20000" value="800"></div>
+      <div class="group-row"><input type="range" id="r-api" min="0" max="10000" step="50" value="800"></div>
+      <div class="hint">USD/mes en la cuenta de Claude Platform (Sonnet/Haiku/Opus), separado de los asientos.</div>
+    </div>
+
+    <div>
+      <label style="font-weight:600;font-size:14px">Facturación asientos Team</label>
+      <div class="billing-seg">
+        <button id="bill-annual" class="active">Anual</button>
+        <button id="bill-monthly">Mensual</button>
+      </div>
+      <div class="hint">Enterprise solo se factura anual.</div>
+    </div>
+  </div>
+
+  <div class="results">
+    <div class="plan-card" id="card-team">
+      <div class="ptitle"><b>Team</b><span class="badge" id="badge-team" style="display:none">recomendado</span></div>
+      <div class="pricebox">
+        <div><span class="amount" id="team-month">–</span><span class="label">USD / mes</span></div>
+        <div><span class="amount" id="team-year">–</span><span class="label">USD / año</span></div>
+      </div>
+      <div class="breakdown" id="team-breakdown"></div>
+    </div>
+
+    <div class="plan-card" id="card-ent">
+      <div class="ptitle"><b>Enterprise</b><span class="badge" id="badge-ent" style="display:none">recomendado</span></div>
+      <div class="pricebox">
+        <div><span class="amount" id="ent-month">–</span><span class="label">USD / mes (asientos+API)</span></div>
+        <div><span class="amount" id="ent-year">–</span><span class="label">USD / año</span></div>
+      </div>
+      <div class="breakdown" id="ent-breakdown"></div>
+      <div class="hint" id="ent-min-warning" style="margin-top:8px"></div>
+    </div>
+  </div>
+</section>
+
+<div class="recbox">
+  <h3 id="rec-title">Recomendación</h3>
+  <p id="rec-text"></p>
+</div>
+
+<section>
+  <h2>Team vs Enterprise, punto por punto</h2>
+  <div class="scroller">
+  <table class="cmp">
+    <tr><th>Característica</th><th>Team</th><th>Enterprise</th></tr>
+    <tr><td>Rango de usuarios</td><td>2 – 150</td><td>Sin tope, contrato dedicado</td></tr>
+    <tr><td>Precio asiento Standard (anual)</td><td>$20/mes</td><td>$20/mes</td></tr>
+    <tr><td>Precio asiento Premium (anual)</td><td>$100/mes</td><td class="no">No aplica (uso se cobra a tarifa API)</td></tr>
+    <tr><td>Consumo de uso</td><td class="yes">Incluido/acotado por tipo de asiento</td><td class="no">Facturado aparte a tarifas de API</td></tr>
+    <tr><td>SSO</td><td class="yes">Sí</td><td class="yes">Sí</td></tr>
+    <tr><td>Accesos basados en rol (RBAC)</td><td class="no">No</td><td class="yes">Sí</td></tr>
+    <tr><td>SCIM (aprovisionamiento)</td><td class="no">No</td><td class="yes">Sí</td></tr>
+    <tr><td>Audit logs</td><td class="no">No</td><td class="yes">Sí</td></tr>
+    <tr><td>Compliance API</td><td class="no">No</td><td class="yes">Sí</td></tr>
+    <tr><td>Retención de datos personalizada</td><td class="no">No</td><td class="yes">Sí</td></tr>
+    <tr><td>Oferta HIPAA-ready / BAA</td><td class="no">No</td><td class="yes">Sí</td></tr>
+    <tr><td>No entrenamiento con tus datos</td><td class="yes">Por defecto</td><td class="yes">Por defecto</td></tr>
+    <tr><td>Facturación</td><td>Mensual o anual</td><td>Anual (self-serve o con ventas)</td></tr>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2>Conceptos clave y recomendaciones</h2>
+  <div class="cards">
+
+    <div class="card">
+      <h3>Team <span class="tag">2–150 usuarios</span></h3>
+      <p>Plan self-serve. El costo de uso va empaquetado en el precio del asiento (Standard vs Premium = multiplicador de uso). Buena opción si no manejan datos sensibles o mientras hacen un piloto corto.</p>
+    </div>
+
+    <div class="card">
+      <h3>Enterprise <span class="tag teal">datos sensibles</span></h3>
+      <p>Mismo precio de asiento base ($20/mes), pero el consumo real se cobra a tarifa API en vez de venir empaquetado. A cambio obtienes RBAC, SCIM, audit logs, Compliance API y retención de datos personalizada: lo que pediste para pacientes.</p>
+    </div>
+
+    <div class="card">
+      <h3>BAA / DPA <span class="tag amber">contractual</span></h3>
+      <p>El DPA (Data Processing Agreement) es el acuerdo estándar de tratamiento de datos. El BAA (Business Associate Agreement) es específico de la ley HIPAA de EE.UU. para información de salud (PHI).</p>
+      <ul>
+        <li>Para Chile aplica la Ley 19.628/21.719, no HIPAA, pero el mecanismo técnico (BAA/DPA) es el mismo que usarían para amarrar el resguardo.</li>
+        <li>No se activa solo: se firma contactando al equipo comercial de Anthropic.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>ZDR — Zero Data Retention <span class="tag amber">se solicita</span></h3>
+      <p>Con ZDR, Anthropic no guarda tus prompts/respuestas después de responder, salvo lo mínimo exigido por ley o para prevenir abuso.</p>
+      <ul>
+        <li>Requiere aprobación de Anthropic (cuenta calificada), no es un switch self-serve.</li>
+        <li>Aplica a la API/Enterprise; en Enterprise también puedes fijar una ventana de retención personalizada en vez de cero total.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Costo API / Claude Platform</h3>
+      <p>Separado de los asientos: se paga por token, para el trabajo de agentes, MCP y RAG (DREAMS, vault, reportería).</p>
+      <ul>
+        <li>Sonnet 5: $2 / $10 por millón de tokens (entrada/salida)</li>
+        <li>Haiku 4.5: $1 / $5 — bueno para indexado masivo y clasificación barata</li>
+        <li>Opus 5.5: $4 / $20 — razonamiento pesado</li>
+      </ul>
+    </div>
+
+    <div class="card tip">
+      <h3>Tip: piloto con datos sintéticos</h3>
+      <p>Antes de tener el DPA/ZDR firmado, prueben los flujos MCP con datos anonimizados o sintéticos. Actíven el flujo real recién cuando el acuerdo esté cerrado.</p>
+    </div>
+
+    <div class="card tip">
+      <h3>Tip: reutiliza el pipeline n8n</h3>
+      <p>El reporte diario que ya corre por n8n + Python puede extenderse para leer la Compliance API de Anthropic y armar el dashboard de consumo/inactividad por usuario que pediste, en vez de construir algo desde cero.</p>
+    </div>
+
+    <div class="card tip">
+      <h3>Tip: mezcla de asientos</h3>
+      <p>No todos necesitan Premium. Resérvalo para quienes viven en Claude Code (el equipo TI del refactor); gerencias y usuarios generales normalmente rinden bien en Standard.</p>
+    </div>
+
+  </div>
+</section>
+
+<section>
+  <h2>Entendimiento</h2>
+  <p class="sub">Esta sección explica cada concepto de la página para que cualquiera pueda leerla y tomar decisiones informadas: qué significa cada fila de la comparación Team vs Enterprise y qué hay detrás del resto de los controles de la calculadora.</p>
+
+  <div class="scroller">
+  <table class="cmp">
+    <tr><th>Punto</th><th>Qué significa</th><th>Por qué importa al decidir</th></tr>
+
+    <tr><td><b>Rango de usuarios</b></td>
+      <td>Team admite de 2 a 150 asientos y se compra en autoservicio. Enterprise no tiene tope y se contrata con un acuerdo dedicado (vía ventas).</td>
+      <td>Para equipos de tamaño medio, Team alcanza. A partir de ~150 usuarios, o cuando se quieran negociar condiciones, se salta a Enterprise.</td></tr>
+
+    <tr><td><b>Precio asiento Standard (anual)</b></td>
+      <td>El asiento base cuesta lo mismo en ambos planes: $20/mes facturando anual (en Team, $25/mes si es mensual).</td>
+      <td>La diferencia no está en el precio del asiento base, sino en cómo se cobra el consumo (punto siguiente) y en la gobernanza que entrega cada plan.</td></tr>
+
+    <tr><td><b>Precio asiento Premium (anual)</b></td>
+      <td>En Team, el Premium es un asiento que se paga por adelantado: $100/mes anual (o $125/mes mensual). En Enterprise no existe como asiento: el uso por encima del plan se consume vía API y se factura aparte.</td>
+      <td>Team = costo fijo y predecible. Enterprise = costo variable, según el consumo real de tokens.</td></tr>
+
+    <tr><td><b>Consumo de uso</b></td>
+      <td>En Team el uso viene incluido y acotado por el tipo de asiento (Standard = uso estándar de la suite; Premium = más uso y prioridad). En Enterprise el uso del contrato está incluido y el excedente se factura a tarifas de API.</td>
+      <td>Si el uso es parejo conviene el paquete de Team; si fluctúa (batchs, automatización, RAG), Enterprise paga solo lo que se usa.</td></tr>
+
+    <tr><td><b>SSO</b></td>
+      <td>Ambos planes permiten iniciar sesión con el proveedor de identidad corporativo (Okta, Entra/Azure AD, Google).</td>
+      <td>Es el requisito mínimo de TI para adoptar la herramienta; no diferencia entre planes.</td></tr>
+
+    <tr><td><b>RBAC (accesos por rol)</b></td>
+      <td>Solo Enterprise: roles y permisos finos (quién puede hacer qué, delegación de tareas administrativas). En Team todos los asientos se tratan igual.</td>
+      <td>Necesario para separar poderes (TI, finanzas, usuarios) y delegar administración de forma controlada.</td></tr>
+
+    <tr><td><b>SCIM (aprovisionamiento)</b></td>
+      <td>Solo Enterprise: sincroniza usuarios automáticamente con el directorio (alta y baja automática cuando entra o sale gente). En Team el alta/baja es manual.</td>
+      <td>Menos carga administrativa y mejor control de accesos cuando hay rotación de personal.</td></tr>
+
+    <tr><td><b>Audit logs</b></td>
+      <td>Solo Enterprise: queda registro de quién usó qué, cuándo y cómo.</td>
+      <td>Trazabilidad para cumplimiento y para investigar incidentes. En Team no está disponible.</td></tr>
+
+    <tr><td><b>Compliance API</b></td>
+      <td>Solo Enterprise: permite exportar logs y reportes de cumplimiento de forma programática.</td>
+      <td>Alimenta el SIEM/auditoría y puede integrarse al pipeline n8n que ya existe para armar el dashboard de consumo e inactividad por usuario.</td></tr>
+
+    <tr><td><b>Retención de datos personalizada</b></td>
+      <td>Solo Enterprise: permite configurar cuánto tiempo se retienen los datos y registros de la cuenta.</td>
+      <td>Permite balancear resguardo y cumplimiento; es la base sobre la que se puede fijar ZDR u otra ventana de retención.</td></tr>
+
+    <tr><td><b>HIPAA-ready / BAA</b></td>
+      <td>Solo Enterprise: oferta el mecanismo contractual para datos de salud (BAA, específico de HIPAA, y además el DPA estándar). No se activa solo: se firma con el equipo comercial de Anthropic. En Chile aplica la Ley 19.628/21.719, no HIPAA, pero el mecanismo de resguardo es el mismo.</td>
+      <td>Para datos de pacientes es una condición habilitante, no opcional.</td></tr>
+
+    <tr><td><b>No entrenamiento con tus datos</b></td>
+      <td>En ambos planes los prompts no se usan para entrenar los modelos, por defecto.</td>
+      <td>No es un diferenciador entre planes. La protección extra está en la retención (ZDR / ventana personalizada), no en el entrenamiento.</td></tr>
+
+    <tr><td><b>Facturación</b></td>
+      <td>Team factura mensual o anual (la página deja ajustarlo). Enterprise solo anual, sea autoservicio o con ventas.</td>
+      <td>Define flexibilidad presupuestaria: Enterprise implica compromiso de contratación anual.</td></tr>
+  </table>
+  </div>
+
+  <h2 style="margin-top:28px">Conceptos detrás de los controles</h2>
+  <div class="cards">
+
+    <div class="card">
+      <h3>Asientos Standard vs Premium <span class="tag amber">precios</span></h3>
+      <p>El asiento es la unidad de licencia por persona. Standard ($20/mes anual, $25 mensual) cubre el uso estándar de la suite (chat, docs, Claude Code incluido). Premium ($100/mes anual, $125 mensual) da 5x más capacidad de uso que Standard, pensado para quien usa Claude Code o Cowork de forma intensiva.</p>
+      <p>En la página, el select de cada grupo decide qué tipo de asiento se licencia.</p>
+    </div>
+
+    <div class="card">
+      <h3>Consumo API / Claude Platform <span class="tag amber">por token</span></h3>
+      <p>Separado de los asientos: se paga por token, no por persona. Es lo que mueve agentes, MCP y RAG (DREAMS, vault, reportería).</p>
+      <ul>
+        <li>Sonnet 5: $2/$10 por millón de tokens (entrada/salida) — trabajo de agentes.</li>
+        <li>Haiku 4.5: $1/$5 — indexado masivo y clasificación barata.</li>
+        <li>Opus 5.5: $4/$20 — razonamiento pesado.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>DPA y BAA <span class="tag amber">contractual</span></h3>
+      <p>El DPA (Data Processing Agreement) es el acuerdo estándar de tratamiento de datos. El BAA (Business Associate Agreement) es específico de la ley HIPAA de EE.UU. para información de salud (PHI).</p>
+      <ul>
+        <li>Ninguno se activa solo: se firma contactando al equipo comercial de Anthropic.</li>
+        <li>Para Chile aplica la Ley 19.628/21.719; el mecanismo técnico de resguardo es el mismo.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>ZDR — Zero Data Retention <span class="tag amber">solicitar</span></h3>
+      <p>Con ZDR, Anthropic no guarda tus prompts ni respuestas después de responder, salvo lo mínimo exigido por ley o para prevenir abuso.</p>
+      <ul>
+        <li>Requiere aprobación de Anthropic (cuenta calificada); no es un switch autoservicio.</li>
+        <li>Aplica a API/Enterprise. En Enterprise también se puede fijar una ventana de retención personalizada en vez del cero total.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Mezcla de asientos <span class="tag">recomendado</span></h3>
+      <p>No todos necesitan Premium. Se recomienda dejar Premium solo para quienes viven en Claude Code (el equipo TI del refactor) y Standard para gerencias y usuarios generales.</p>
+      <p>En Enterprise todos quedan en el mismo asiento base ($20/mes) y la diferencia se mueve al consumo API.</p>
+    </div>
+
+    <div class="card">
+      <h3>Cómo decide esta calculadora <span class="tag teal">lógica</span></h3>
+      <p>La recomendación es determinista y respeta este orden de prioridad:</p>
+      <ul>
+        <li><b>Datos sensibles marcados</b> → Enterprise: con datos de pacientes los controles (RBAC, audit, BAA/DPA, retención) no son opcionales, aunque cueste lo mismo.</li>
+        <li><b>Sin sensibles y ≤15 asientos</b> → Team: más simple de administrar y costo empaquetado predecible.</li>
+        <li><b>Sin sensibles y &gt;15 asientos</b> → Enterprise: SSO avanzado, SCIM y analítica de uso para administrar muchas cuentas.</li>
+      </ul>
+      <p>El costo no es el único factor: el checkbox de datos sensibles manda primero.</p>
+    </div>
+
+    <div class="card">
+      <h3>Gasto API estimado <span class="tag">insumo</span></h3>
+      <p>Es el campo USD/mes separado de los asientos. En Enterprise ese consumo se suma tal cual al costo (asientos + API); en Team la misma capacidad de agentes se paga vía asientos Premium.</p>
+      <p>Para tomar decisiones sin errores, este número debería medirse en el piloto (con datos sintéticos) antes de presupuestar en serio.</p>
+    </div>
+
+  </div>
+</section>
+
+<footer>Precios de referencia (USD, sin impuestos) según claude.com/pricing — pueden cambiar. Para datos de pacientes, cierra BAA/DPA y ZDR con el equipo comercial de Anthropic antes de operar con información real.</footer>
+</div>
+
+<script>
+const state = { ti:11, ger:10, usr:20, sti:'premium', sger:'standard', susr:'standard', sensibles:true, api:800, billing:'annual' };
+const PRICE = { standard:{annual:20, monthly:25}, premium:{annual:100, monthly:125} };
+const ENT_MIN_SELF_SERVE = 20;
+const ENT_MIN_SALES = 50;
+
+function bindGroup(key, nInput, rInput, sSelect){
+  const n=document.getElementById(nInput), r=document.getElementById(rInput), s=document.getElementById(sSelect);
+  n.addEventListener('input', ()=>{ state[key]=clamp(n.value); r.value=state[key]; render(); });
+  r.addEventListener('input', ()=>{ state[key]=clamp(r.value); n.value=state[key]; render(); });
+  s.addEventListener('change', ()=>{ state['s'+key]=s.value; render(); });
+}
+function clamp(v){ v=parseInt(v||0,10); if(isNaN(v)||v<0) v=0; if(v>150) v=150; return v; }
+
+bindGroup('ti','n-ti','r-ti','s-ti');
+bindGroup('ger','n-ger','r-ger','s-ger');
+bindGroup('usr','n-usr','r-usr','s-usr');
+
+document.getElementById('sensibles').addEventListener('change', e=>{ state.sensibles=e.target.checked; render(); });
+
+const nApi=document.getElementById('n-api'), rApi=document.getElementById('r-api');
+nApi.addEventListener('input', ()=>{ state.api=Math.max(0,parseInt(nApi.value||0,10)); rApi.value=Math.min(state.api,10000); render(); });
+rApi.addEventListener('input', ()=>{ state.api=parseInt(rApi.value,10); nApi.value=state.api; render(); });
+
+const btnA=document.getElementById('bill-annual'), btnM=document.getElementById('bill-monthly');
+btnA.addEventListener('click', ()=>{ state.billing='annual'; btnA.classList.add('active'); btnM.classList.remove('active'); render(); });
+btnM.addEventListener('click', ()=>{ state.billing='monthly'; btnM.classList.add('active'); btnA.classList.remove('active'); render(); });
+
+function fmt(n){ return '$'+Math.round(n).toLocaleString('en-US'); }
+
+function render(){
+  const groups = [
+    {label:'TI', count:state.ti, type:state.sti},
+    {label:'Gerencias', count:state.ger, type:state.sger},
+    {label:'Usuarios', count:state.usr, type:state.susr},
+  ];
+
+  // Team cost
+  let teamMonth=0, teamBreak='';
+  groups.forEach(g=>{
+    if(g.count<=0) return;
+    const price = PRICE[g.type][state.billing];
+    const sub = g.count*price;
+    teamMonth += sub;
+    teamBreak += `<div><span>${g.label} · ${g.count} × ${g.type==='premium'?'Premium':'Standard'} ($${price})</span><span>${fmt(sub)}</span></div>`;
+  });
+  document.getElementById('team-month').textContent = fmt(teamMonth);
+  document.getElementById('team-year').textContent = fmt(teamMonth*12);
+  document.getElementById('team-breakdown').innerHTML = teamBreak || '<div>Sin usuarios asignados</div>';
+
+  // Enterprise cost: all seats at $20/mes anual + api usage
+  const totalSeats = state.ti+state.ger+state.usr;
+  const entSeatCost = totalSeats*20;
+  const entMonth = entSeatCost + state.api;
+  document.getElementById('ent-month').textContent = fmt(entMonth);
+  document.getElementById('ent-year').textContent = fmt(entMonth*12);
+  document.getElementById('ent-breakdown').innerHTML =
+    `<div><span>${totalSeats} asientos × $20 (anual)</span><span>${fmt(entSeatCost)}</span></div>`+
+    `<div><span>Consumo API estimado</span><span>${fmt(state.api)}</span></div>`;
+
+  const warnEl = document.getElementById('ent-min-warning');
+  if(totalSeats < ENT_MIN_SELF_SERVE){
+    warnEl.innerHTML = `<span class="warn-text">⚠ Con ${totalSeats} asientos no alcanzas el mínimo de ${ENT_MIN_SELF_SERVE} para Enterprise self-serve.</span> Necesitas sumar ${ENT_MIN_SELF_SERVE-totalSeats} más, o contactar ventas para negociar un contrato aparte (la vía sales-assisted normalmente pide ${ENT_MIN_SALES}).`;
+  } else if(totalSeats < ENT_MIN_SALES){
+    warnEl.innerHTML = `<span class="ok-text">✓ Calificas para Enterprise self-serve</span> (mínimo ${ENT_MIN_SELF_SERVE}). Para la vía sales-assisted — necesaria para BAA/HIPAA-ready — el mínimo habitual es ${ENT_MIN_SALES} asientos; con menos igual puedes pedirlo, pero no está garantizado.`;
+  } else {
+    warnEl.innerHTML = `<span class="ok-text">✓ Calificas para self-serve y para sales-assisted</span> (ambos mínimos cubiertos).`;
+  }
+
+  // Recommendation
+  const badgeTeam=document.getElementById('badge-team'), badgeEnt=document.getElementById('badge-ent');
+  const cardTeam=document.getElementById('card-team'), cardEnt=document.getElementById('card-ent');
+  badgeTeam.style.display='none'; badgeEnt.style.display='none';
+  cardTeam.classList.remove('recommended'); cardEnt.classList.remove('recommended');
+
+  const title=document.getElementById('rec-title'), text=document.getElementById('rec-text');
+  if(state.sensibles && totalSeats < ENT_MIN_SELF_SERVE){
+    badgeEnt.style.display='inline'; cardEnt.classList.add('recommended');
+    title.textContent='Recomendación: Enterprise, pero aún no calificas';
+    text.textContent=`Con datos de pacientes necesitas los controles de Enterprise (RBAC, audit logs, retención personalizada, BAA/DPA). El problema es que con ${totalSeats} asientos no llegas al mínimo de ${ENT_MIN_SELF_SERVE} para comprarlo self-serve. Opciones: sumar personas hasta 20, usar Team como puente mientras crecen (sabiendo que no tiene esos controles), o contactar directo a ventas de Anthropic para evaluar un contrato a medida.`;
+  } else if(state.sensibles){
+    badgeEnt.style.display='inline'; cardEnt.classList.add('recommended');
+    title.textContent='Recomendación: Enterprise';
+    text.textContent='Marcaste que van a procesar datos de pacientes. Team no ofrece RBAC, audit logs, retención personalizada ni BAA/DPA — con datos de salud esos controles no son opcionales. El costo de asiento es igual que en Team ($20/mes), la diferencia real es que el consumo se cobra aparte a tarifa API en vez de venir empaquetado.';
+  } else if(totalSeats<=15){
+    badgeTeam.style.display='inline'; cardTeam.classList.add('recommended');
+    title.textContent='Recomendación: Team';
+    text.textContent='Sin datos sensibles y con un grupo chico, Team es más simple de administrar y el costo empaquetado por asiento suele salir más predecible que el modelo de asiento + consumo de Enterprise.';
+  } else {
+    badgeEnt.style.display='inline'; cardEnt.classList.add('recommended');
+    title.textContent='Recomendación: Enterprise';
+    text.textContent='Con esta dotación conviene Enterprise por SSO avanzado, SCIM y analítica de uso más robusta para administrar tantas cuentas, aunque hoy no manejen datos sensibles.';
+  }
+}
+render();
+</script>
+</body>
+</html>

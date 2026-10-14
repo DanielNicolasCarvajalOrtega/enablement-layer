@@ -1,0 +1,59 @@
+"""TODO: adapter MCP del bloque <DOMINIO>.
+
+Paso 7 de ../PLANTILLA_CAPACIDAD.md. Funciones delgadas: autorizan contra el
+contrato, delegan en el service y serializan. Ninguna de las tres cosas se
+reimplementa acá.
+
+El nombre, la descripción y las annotations salen del Capability Registry, así que
+no puede haber deriva entre el contrato publicado y el implementado (R17).
+"""
+
+from mcp.server.fastmcp import Context
+
+# `mcp` es el FastMCP compartido de adapters/mcp/server.py. Nunca crear otro por
+# dominio: habría dos servers y los clientes MCP announcement la lista de uno solo.
+#
+# `from mcp.server.fastmcp import ...`, jamás `from fastmcp import ...`: el paquete
+# standalone es incompatible con mcp 1.30.
+from adapters.mcp.server import FechaArg, _json, _run, _tool, mcp
+from composition import <dominio>_service
+
+T = "<dominio>.<nombre_snake>"
+
+
+@mcp.tool(**_tool(T, "TODO título (igual que el `title` del registry)"))
+def consultar_todo(fecha: FechaArg, ctx: Context) -> str:
+    """TODO: una línea. La descripción que ve el agente la publica el registry."""
+    # `_run` autoriza, ejecuta y traduce DomainError a RuntimeError("[CODE] msg"),
+    # que FastMCP publica como isError. No rehacer ese try/except.
+    out = _run(T, ctx, <dominio>_service.consultar_todo, fecha)
+    return _json(
+        {
+            # `_json` es json.dumps(default=str): los Decimal salen como texto.
+            "fecha": out.fecha.isoformat(),
+            "items": [
+                {"campo": i.campo, "cantidad": i.cantidad, "monto": str(i.monto)}
+                for i in out.items
+            ],
+            "total_cantidad": out.total_cantidad,
+            "total_monto": str(out.total_monto),
+        }
+    )
+
+
+# --------------------------------------------------------------------------- #
+# Si la capability NO acepta argumentos: la firma es sólo `(ctx: Context)` y
+# `_run` se llama sin extras. El inputSchema sale vacío y eso ES el contrato.
+# --------------------------------------------------------------------------- #
+
+# @mcp.tool(**_tool(T, "TODO título"))
+# def consultar_todo(ctx: Context) -> str:
+#     """TODO."""
+#     out = _run(T, ctx, <dominio>_service.consultar_todo)
+#     return _json({...})
+#
+# --------------------------------------------------------------------------- #
+# Si tiene un filtro que NO es `fecha`: agregar su Annotated en
+# adapters/mcp/server.py, al lado de FechaArg/OrigenArg, y usarlo como tipo acá.
+# Un `otro: str` pelado no le dice al agente nada sobre el formato.
+# --------------------------------------------------------------------------- #

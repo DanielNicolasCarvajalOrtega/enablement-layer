@@ -1,0 +1,130 @@
+
+
+
+Atte
+Rodrigo Mansilla
+
+￼
+
+> Inicio del mensaje reenviado:
+> 
+> De: info@ino.cl
+> Asunto: Resumen Control (Contable) 23/09/2026
+> Fecha: 23 de septiembre de 2026 a las 10:31:04 p.m. CLST
+> Para: rodrigolp60@hotmail.com, claudio.perez@ino.cl, rodrigo.mansilla@ino.cl, ricardo.fonfria@ino.cl, maria.isabel.pizarro@ino.cl
+> 
+> 
+> Resumen Deuda 
+> Mes 	Deuda 
+> 09-2026 	4.913.240.404 
+> 08-2026 	4.836.775.978 
+> 07-2026 	4.792.747.728 
+> 06-2026 	4.729.440.514 
+> 
+> 
+> Ingresos por tipo pago
+> Tipo Pago 	Monto 
+> WEBPAY 	2.739.900 
+> TOTEM 	1.000.000 
+> CAJA - TARJETA 	53.875.700 
+> CAJA - EFECTIVO 	4.766.000 
+> TOTAL 	62.381.600 
+> 
+> 
+> Ingresos por Tipo Tarjeta (CAJA)
+> Tarjeta	Cantidad	Monto
+> CRD1 	295 	18.100.500 
+> DEB1 	1.043 	35.775.200 
+> TOTAL 	1.338 	53.875.700 
+> 
+> Ingresos por Tipo Tarjeta (TOTEM)
+> Tarjeta	Cantidad	Monto
+> CREDITO 	8 	440.000 
+> DEBITO 	12 	560.000 
+> TOTAL 	20 	1.000.000 
+> 
+> Ingresos por Tipo Tarjeta (WEBPAY)
+> Tarjeta	Cantidad	Monto
+> CREDITO 	11 	849.000 
+> DEBITO 	46 	1.890.900 
+> TOTAL 	57 	2.739.900 
+> 
+> Ingresos por Tipo Prevision
+> Prevision	Cantidad	Monto
+> CONVENIO FAMILIAR FUNCIONARIO V1 	1 	15.000 
+> FONASA B 	1 	5.000 
+> PACK 6 TELEORTODONCIA INO 	2 	34.000 
+> PRIMERA FASE V1 ESTETICO 	4 	139.000 
+> PRIMERA FASE V1 ORTOPERIODONTAL 	2 	66.000 
+> PRIMERA FASE V1 QUIRURGICO 	10 	331.000 
+> PRIMERA FASE V1 TRADICIONAL 	43 	2.919.000 
+> PROMO MAYO 2018 	45 	1.599.400 
+> PROMO_200/18 	1 	18.000 
+> VALOR UNICO ESTETICO CERAMICA 2 	3 	36.000 
+> 2022 Bracket Metálico 	7 	793.400 
+> 2022 BRACKET METALICO CONVENIOS V2 	14 	444.000 
+> 2022 Bracket Metálico Promo Inmediata 	4 	90.000 
+> 2022 BRACKET METALICO PROMO INMEDIATA V2 	54 	2.477.500 
+> 2022 BRACKET METALICO V2 	248 	7.885.000 
+> 2022 ORTODONCIA INVISIBLE ALINEADORES V2 	5 	114.000 
+> 2022 Ortodoncia Ortoperiodontal 	11 	420.000 
+> 2022 ORTODONCIA PEDIATRICO V2 	12 	285.000 
+> 2022 Ortodoncia Quirúrgico 	21 	636.000 
+> 2022 PACK 6 ALINEADOR.CL V2 	2 	32.000 
+> 2022 TELEORTODONCIA V2 	1 	30.000 
+> 2024 BRACKET ESTETICO 	8 	535.000 
+> 2024 BRACKET METALICO 	704 	30.618.800 
+> 2024 BRACKET METALICO CONVENIOS 	50 	1.400.500 
+> 2024 BRACKET METALICO FAMILIAR FUNCIONARIO 	1 	24.000 
+> 2024 BRACKET METALICO PROMO INMEDIATA 	228 	7.816.000 
+> 2024 ORTODONCIA ALINEADORES 	17 	908.000 
+> 2024 ORTODONCIA ORTOPERIODONTAL 	26 	974.000 
+> 2024 ORTODONCIA PEDIATRICO 	29 	833.000 
+> 2024 ORTODONCIA QUIRURGICO 	12 	429.000 
+> 2024 PACK 6 ALINEADOR.CL 	2 	32.000 
+> 2025 BRACKET METÁLICO + LIMPIEZA 	1 	236.000 
+> 2026 ORTODONCIA ORTOPERIODONTAL 	4 	238.000 
+> TOTAL 	1.573 	62.413.600 
+> 
+> Boletas Emitidas por usuario
+> Usuario	Cantidad	Monto
+> MENDEZ ROXANA IVETTE 	67 	1.850.000 
+> . SISTEMA 	77 	3.739.900 
+> MONTES NICOL 	28 	3.649.000 
+> AGUILERA JAVIERA 	97 	2.797.000 
+> MOLINA AMANDA 	130 	3.449.000 
+> SOT KRISHNA 	29 	2.567.900 
+> SEPULVEDA KARLA 	49 	2.201.400 
+> FLORES ANTONIA 	23 	507.000 
+> ANCAPE JAVIERA 	27 	1.019.000 
+> QUIROGA CLAUDIA ANDREA 	120 	3.589.500 
+> ANZIANI PIERINA 	58 	1.555.500 
+> CONTRERAS DANNIA 	27 	877.000 
+> PEREZ VANESSA 	39 	787.000 
+> BARRIGA EDITH 	40 	4.365.400 
+> SOTO CAROLINA 	19 	620.000 
+> CASTILLO MILITZA 	27 	945.500 
+> VENEGAS DANIELA 	32 	3.091.000 
+> ZELADA KATHALINA ALEJANDRA 	70 	2.013.500 
+> SILVA DAYANA 	30 	3.063.000 
+> QUINTANILLA NICOL 	107 	3.183.500 
+> VENEGAS CATALINA 	50 	1.396.000 
+> ESCOBAR CAMILA NAOMÍ 	28 	3.620.000 
+> ARANDA KARINA 	125 	3.562.000 
+> RAVANAL GIOVANNA ALESSANDRA 	84 	2.525.000 
+> GALVEZ LESLIE CAROLINA 	43 	1.720.500 
+> POBLETE ANGELINA 	59 	1.460.000 
+> SALFATE CONSTANZA 	86 	2.227.000 
+> TOTAL 	1.571 	62.381.600 
+> 
+> Boletas anuladas por usuario
+> Usuario	Cantidad	Monto
+> No hay datos para fecha seleccionada
+
+
+-- 
+Este correo electrónico contiene información legal confidencial y 
+privilegiada. Si Usted no es el destinatario a quien se desea enviar este 
+mensaje, tendrá prohibido darlo a conocer a persona alguna, así como a 
+reproducirlo o copiarlo. Si recibe este mensaje por error, favor de 
+notificarlo al remitente de inmediato y desecharlo de su sistema.

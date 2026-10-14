@@ -1,0 +1,36 @@
+"""TODO: puertos de persistencia del bloque <DOMINIO>.
+
+Paso 3 de ../PLANTILLA_CAPACIDAD.md. Un NamedTuple por forma de fila y un método
+abstracto por consulta. El service depende de este puerto, no de la clase Oracle.
+"""
+
+from abc import ABC, abstractmethod
+from datetime import date
+from decimal import Decimal
+from typing import NamedTuple
+
+
+class TodoRow(NamedTuple):
+    """Fila de TODO_SQL.
+
+    TODO: qué es crudo y qué arma el service. Si la fila trae un None serializable,
+    aclararlo: el repository lo convierte a "" porque un None en el JSON saldría como
+    la cadena "None".
+    """
+
+    campo: str
+    cantidad: int
+    monto: Decimal
+
+
+class TodoPort(ABC):
+    """Puerto de persistencia del bloque <DOMINIO> (V2 R15)."""
+
+    @abstractmethod
+    def consultar_todo(self, fecha: date) -> list[TodoRow]:
+        """TODO: qué agrupa el SQL, con qué filtro de fecha y qué estados incluye.
+
+        Sin filtro → el método no lleva parámetro (ver pacientes_por_ciudad_chile).
+        Una fila o cero → el retorno es TodoRow | None y el None significa "el
+        legacy omite la fila", no "cero".
+        """

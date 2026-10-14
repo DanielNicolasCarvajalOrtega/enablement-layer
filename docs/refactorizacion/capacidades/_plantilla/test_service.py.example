@@ -1,0 +1,130 @@
+"""TODO: suite de service del bloque <DOMINIO>.
+
+Paso 8 de ../PLANTILLA_CAPACIDAD.md.
+
+Si el dominio es nuevo, va en tests/test_service_<dominio>.py. Si es contabilidad,
+extender el test_service.py que ya existe en vez de crear otro archivo.
+
+La trampa de los `!= 403`: un `!= 403` pasa con un 401 y no prueba nada. Para
+autorización, afirmar el código exacto o afirmar `!= 401` Y `!= 403`.
+"""
+
+import inspect
+from datetime import date
+from decimal import Decimal
+
+import pytest
+from pydantic import ValidationError as PydanticValidationError
+
+from application.<dominio>.models import ConsultarTodoInput
+from application.<dominio>.ports import TodoPort, TodoRow
+from application.<dominio>.service import TodoService
+from application.errors import NotFoundError, ValidationError
+
+
+class FakeRepo(TodoPort):
+    """Implementa el puerto con filas fijas y cuenta las llamadas."""
+
+    def __init__(self, rows=None):
+        self.rows = rows or []
+        self.llamadas = 0
+
+    def consultar_todo(self, fecha) -> list[TodoRow]:
+        self.llamadas += 1
+        return self.rows
+
+
+def _svc(**kwargs) -> TodoService:
+    return TodoService(FakeRepo(**kwargs))
+
+
+# --------------------------------------------------------------------------- #
+# Mapeo, orden y totales
+# --------------------------------------------------------------------------- #
+
+
+def test_mapea_filas_y_calcula_los_totales():
+    svc = _svc(rows=[TodoRow("ALGO", 3, Decimal("10.50")), TodoRow("OTRO", 1, Decimal("2.25"))])
+    out = svc.consultar_todo(date(2025, 5, 12))
+
+    assert [i.campo for i in out.items] == ["ALGO", "OTRO"]
+    assert out.total_cantidad == 4
+    assert out.total_monto == Decimal("12.75")
+    # Los totales son de la capa (R9): se suman acá, no se le piden al agente.
+    assert out.total_monto == sum(i.monto for i in out.items)
+
+
+def test_conserva_el_orden_del_sql():
+    # TODO: si el SQL ya trae un orden total, este test debe pedir que NO se
+    # reordene (ver test_no_reordena_una_entrada_desordenada de pacientes).
+    # Si el SQL no ordena, debe pedir el orden canónico fijado por el service.
+    ...
+
+
+def test_no_reordena_una_entrada_desordenada():
+    # Si el SQL ordena, la capa no toca el orden: un segundo sort en Python dejaría
+    # el contrato dependiendo del NLS_SORT de Oracle en vez del texto original.
+    ...
+
+
+# --------------------------------------------------------------------------- #
+# Errores de dominio
+# --------------------------------------------------------------------------- #
+
+
+def test_sin_datos_es_nodata_y_no_unavailable():
+    # Una tabla vacía con la query exitosa es NO_DATA (404), no UNAVAILABLE (503).
+    # Confundir los dos le miente al agente sobre si tiene que reintentar (R8).
+    with pytest.raises(NotFoundError) as exc:
+        _svc(rows=[]).consultar_todo(date(2025, 5, 12))
+    assert exc.value.error_code == "NO_DATA"
+
+
+def test_fecha_invalida_es_invalid_argument():
+    with pytest.raises(ValidationError) as exc:
+        _svc().consultar_todo("banana")
+    assert exc.value.error_code == "INVALID_ARGUMENT"
+    # El mensaje nombra el campo que falló, no una lista fija de todos los campos
+    # de la firma (ver H1 de la plantilla).
+    assert "fecha" in exc.value.message
+
+
+# --------------------------------------------------------------------------- #
+# Comportamiento, no resultado
+# --------------------------------------------------------------------------- #
+
+
+def test_una_sola_consulta_al_repo():
+    repo = FakeRepo(rows=[TodoRow("ALGO", 1, Decimal("1.00"))])
+    TodoService(repo).consultar_todo(date(2025, 5, 12))
+    assert repo.llamadas == 1
+
+
+def test_el_service_no_acepta_argumentos_de_mas():
+    # Guarda de contrato: si alguien agrega un filtro, esta prueba falla y obliga a
+    # revisar la ficha y el catálogo antes de publicar un alcance que la fuente
+    # normativa no autoriza.
+    params = inspect.signature(TodoService.consultar_todo).parameters
+    assert [p for p in params if p != "self"] == ["fecha"]   # TODO: [] si no acepta fecha
+
+
+def test_el_contrato_de_entrada_rechaza_argumentos_no_declarados():
+    # El schema MCP sale de la firma de la tool, no del modelo; el modelo fija que
+    # un argumento extra es un error explícito y no algo que se ignora en silencio.
+    with pytest.raises(PydanticValidationError):
+        ConsultarTodoInput(ciudad="SANTIAGO")   # TODO: campo que no existe
+    # TODO: si la entrada es vacía, además:
+    # assert ConsultarTodoInput().model_dump() == {}
+
+
+def test_conserva_los_literales_crudos_del_maestro():
+    # Los literales del maestro (ej. 'SAN JOSE DE MA', '2024 BRACKET METALICO') no
+    # se corrigen ni se expanden: son los que agrupó el texto original y el dueño
+    # del dato tiene que aprobar cualquier transformación.
+    ...
+
+
+def test_no_inventa_filas_para_lo_que_el_legacy_omite():
+    # Si el legacy no trae un período sin datos, la capa no lo agrega en cero.
+    # Ponerlo en cero es inventar un dato, no representar el original.
+    ...

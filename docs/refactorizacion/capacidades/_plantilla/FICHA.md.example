@@ -1,0 +1,238 @@
+# <!-- TODO --> · <Nombre funcional en lenguaje de negocio>
+
+> Paso 10 de [`../PLANTILLA_CAPACIDAD.md`](../PLANTILLA_CAPACIDAD.md).
+> Modelos: [`consultar_ingresos_por_tipo_pago.md`](../consultar_ingresos_por_tipo_pago.md)
+> (con `fecha`) y [`consultar_pacientes_por_ciudad_chile.md`](../consultar_pacientes_por_ciudad_chile.md)
+> (sin `fecha`).
+
+---
+
+## 1 · Identidad del contrato
+
+| Campo | Valor |
+|---|---|
+| `id` | TODO |
+| `version` | TODO (hoy `CONTRACT_VERSION`) |
+| `name` | TODO (`consultar_...`, sin versión) |
+| `title` | TODO |
+| `mode` | TODO (`READ`) |
+
+## 2 · Propósito
+
+TODO: qué hace, en una frase. **Cuándo NO usarla**, citando las capabilities vecinas
+por su `name` real.
+
+## 3 · Proyección MCP
+
+Annotations **derivadas de `mode`**, no escritas a mano:
+
+| Annotation | Valor |
+|---|---|
+| `readOnlyHint` | TODO |
+| `destructiveHint` | TODO |
+| `idempotentHint` | TODO |
+| `openWorldHint` | TODO |
+
+### Entrada
+
+| Parámetro | Tipo | Obligatorio | Formato | Qué hace |
+|---|---|---|---|---|
+| TODO | TODO | TODO | TODO | TODO |
+
+### Salida
+
+| Campo | Tipo | Semántica |
+|---|---|---|
+| TODO | TODO | TODO |
+
+TODO: campos que cierran una lectura equivocada (`base`,
+`incluye_pacientes_no_activos`, `deuda_es_promedio_diario`…). Si el resultado admite
+otra lectura, decirlo acá explícitamente.
+
+## 4 · Proyección REST
+
+| | |
+|---|---|
+| Método | TODO |
+| Path | TODO |
+| Parámetros | TODO |
+
+| Código | Cuándo |
+|---|---|
+| 200 | TODO |
+| 400 | TODO |
+| 401 | TODO |
+| 403 | TODO |
+| 404 | `NO_DATA`: la query corrió y no devolvió filas |
+| 503 | `UNAVAILABLE`: Oracle caído |
+
+TODO: por qué **no** hay 400 si la consulta no recibe argumentos (FastAPI ignora los
+query params no declarados; el contrato vacío se fija en el modelo con
+`extra="forbid"`).
+
+## 5 · Modo de ejecución
+
+TODO: diagrama de secuencia cliente → security → router → service → repository → Oracle.
+
+Las 4 reglas de la capa:
+
+1. El adapter solo autoriza y delega.
+2. El service solo calcula; no conoce la base.
+3. El repository solo persiste; no conoce el negocio.
+4. La autorización ocurre antes de la query.
+
+## 6 · Query incluida
+
+```sql
+-- TODO: la query completa, con su owner explícito
+```
+
+**Origen normativo:** TODO (`archivo:líneas` o sección de `encuentros.md`).
+
+### Decisiones replicadas del legacy
+
+| # | Decisión | Por qué se replica |
+|---|---|---|
+| h1 | TODO: banda horaria / igualdad exacta / `trunc()` | TODO |
+| h2 | TODO: estados incluidos | TODO |
+| h3 | TODO: unión con la réplica `DENT_CICLO`, o por qué no aplica | TODO |
+| h4 | TODO: agrupación por columna real | TODO |
+| h5 | TODO: lo que el legacy **no** filtra | TODO |
+
+### Diferencias deliberadas con el reporte más parecido
+
+TODO: si hay otro reporte que se parece más, decir cuál y en qué difiere. Modelo:
+§6.2 de la ficha #7.
+
+### Diferencias con la implementación
+
+| Aspecto | La query | La capa | Por qué |
+|---|---|---|---|
+| TODO | TODO | TODO | TODO |
+
+## 7 · Reglas de negocio
+
+```yaml
+# TODO: las reglas que IMPONE la capa, no las que lee pasivamente.
+- cuando: TODO
+  regla: TODO
+  porque: TODO
+```
+
+> Sección 7 del `CapabilityContract` de V2 §9.3. **Hoy no existe ese campo en el
+> dataclass**: estas reglas viven solo en este documento y no las testea nada (H5 de
+> la plantilla). Dejá la lista igual: es la frontera documentada.
+
+## 8 · Contrato Pydantic
+
+TODO: los tres modelos (entrada, item, salida) y por qué tiene el shape que tiene.
+Especial atención a los `Literal` y a los campos que cierran lecturas.
+
+## 9 · Datos y gobernanza
+
+| Campo | Valor |
+|---|---|
+| `data_profile` | TODO |
+| `sources` | TODO |
+| `classification` | TODO |
+| `pii` | TODO |
+
+| `allowed_fields` | `forbidden_fields` |
+|---|---|
+| TODO | TODO |
+
+- **Aprobador del alcance:** TODO (V2 §16.3: gerencia para `financial`, el dueño del
+  dato para `clinical`).
+- **Mitigación de rarezas:** TODO.
+
+> Igual que la sección 7: `allowed_fields` / `forbidden_fields` **no están en el
+> dataclass** y nada los testea (H5). Se escriben igual.
+
+## 10 · Seguridad
+
+| Rol | Por qué sí | Por qué no |
+|---|---|---|
+| TODO | TODO | — |
+| `contador` | — | TODO si queda fuera |
+
+Si el rol **no** existe todavía: son 5 archivos (H4 de la plantilla).
+
+## 11 · Errores
+
+| Situación | `error_code` | HTTP | Mensaje |
+|---|---|---|---|
+| Query ok, sin filas | `NO_DATA` | 404 | TODO |
+| Oracle caído | `UNAVAILABLE` | 503 | TODO |
+| Argumento inválido | `INVALID_ARGUMENT` | 400 | TODO |
+| Sin token | `UNAUTHORIZED` | 401 | TODO |
+| Rol fuera del contrato | `FORBIDDEN` | 403 | TODO |
+
+**`NO_DATA` ≠ `UNAVAILABLE`**: la primera es un resultado, la segunda un fallo.
+
+**El mensaje nombra el campo que falló.** No se lista la firma completa: eso le pide
+al agente arreglar campos que estaban bien (H1 de la plantilla).
+
+## 12 · Observabilidad
+
+| Sí se registra | No se registra |
+|---|---|
+| TODO: `capability_id`, `user`, `roles`, duración, `error_code` | TODO: el token, los filtros con PII, el resultado |
+
+## 13 · Paridad
+
+| Aspecto | Criterio de aceptación | Resultado |
+|---|---|---|
+| Variante | TODO golden file / TODO comparación | — |
+| Fecha usada | TODO | TODO |
+| Igualdad | TODO | TODO |
+| Diferencias | TODO | TODO |
+
+## 14 · Ejemplos
+
+**Entrada**
+
+```json
+TODO
+```
+
+**Salida** (recortada)
+
+```json
+TODO
+```
+
+## 15 · Trazabilidad técnica
+
+| | |
+|---|---|
+| Fuente normativa | TODO |
+| `oracle_sql_id` | TODO |
+| `legacy_method` | TODO (`legacy_lines`) |
+
+**Archivos tocados**
+
+- [ ] `application/registry.py`
+- [ ] `application/<dominio>/models.py`
+- [ ] `application/<dominio>/ports.py`
+- [ ] `infrastructure/oracle/<dominio>_repository.py`
+- [ ] `application/<dominio>/service.py`
+- [ ] `adapters/rest/<dominio>.py`
+- [ ] `adapters/mcp/<dominio>.py`
+- [ ] `composition.py` / `app.py` (solo dominio nuevo)
+- [ ] `tests/…`
+
+**Tests**
+
+- [ ] `test_registry.py` (id declarado en la forma de entrada)
+- [ ] `test_contracts.py` (`ENDPOINTS` + `REPO_POR_PATH`)
+- [ ] `test_repository_sql.py`
+- [ ] `test_service_<dominio>.py`
+- [ ] `test_paridad_oracle.py`
+
+## 16 · Referencias
+
+- [`CATALOGO.md`](../CATALOGO.md)
+- [`PLANTILLA_CAPACIDAD.md`](../PLANTILLA_CAPACIDAD.md)
+- [`../../000_MiEstrategiaV2.md`](../../000_MiEstrategiaV2.md)
+- [`../../arquitectura.md`](../../arquitectura.md)
+- Fuente normativa: TODO

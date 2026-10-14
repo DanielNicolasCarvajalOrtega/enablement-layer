@@ -1,0 +1,66 @@
+{
+  "name": "funcionarios",
+  "mimeTree": [
+    {
+      "mimeType": "multipart/related",
+      "filename": "",
+      "size": 0,
+      "hasData": false,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "multipart/related;\r\n\ttype=\"text/html\";\r\n\tboundary=\"Apple-Mail=_F836F5A4-A648-4120-9C80-83BFDAA8CDB6\""
+        }
+      ]
+    },
+    {
+      "mimeType": "multipart/alternative",
+      "filename": "",
+      "size": 0,
+      "hasData": false,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "multipart/alternative;\r\n\tboundary=\"Apple-Mail=_7B43B7BE-E786-49D9-B4AC-5649317B7ADC\""
+        }
+      ]
+    },
+    {
+      "mimeType": "text/plain",
+      "filename": "",
+      "size": 31007,
+      "hasData": true,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "text/plain; charset=\"UTF-8\""
+        },
+        {
+          "name": "Content-Transfer-Encoding",
+          "value": "quoted-printable"
+        }
+      ]
+    },
+    {
+      "mimeType": "text/html",
+      "filename": "",
+      "size": 33175,
+      "hasData": true,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "text/html; charset=\"UTF-8\""
+        },
+        {
+          "name": "Content-Transfer-Encoding",
+          "value": "quoted-printable"
+        }
+      ]
+    }
+  ],
+  "plainBytes": 31007,
+  "plainCrlf": 1001,
+  "plainLf": 1001,
+  "htmlBytes": 46578,
+  "threadId": "1a0d3e8886aca81c"
+}

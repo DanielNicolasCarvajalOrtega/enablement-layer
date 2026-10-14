@@ -1,0 +1,1757 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>INO Clinic · Control Diario</title>
+<style>
+:root{
+  /* Tema claro. Los acentos son tonos 700 para mantener >= 4.5:1 sobre blanco. */
+  --bg:#eef2f8; --bg2:#e4eaf4; --panel:#ffffff; --panel2:#f5f8fc;
+  --line:#ccd8e8; --line2:#b9c7db; --ctl:#71839f;
+  --txt:#152238; --dim:#405473; --dim2:#5a6b85;
+  --a1:#0e7490; --a2:#4f46e5; --a3:#be185d;
+  --ok:#047857; --warn:#b45309; --bad:#be123c; --info:#1d4ed8;
+  --r:14px; --shadow:0 10px 28px -20px rgba(23,43,77,.45);
+  --on-accent:#ffffff;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:
+    radial-gradient(1100px 620px at 12% -8%, #c9dcf7aa, transparent 60%),
+    radial-gradient(900px 560px at 92% 4%, #e3d7f7aa, transparent 62%),
+    radial-gradient(800px 500px at 50% 108%, #cfeae6aa, transparent 60%),
+    var(--bg);
+  color:var(--txt);
+  font:15px/1.55 ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+}
+.wrap{max-width:1560px;margin:0 auto;padding:22px 20px 80px}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+
+/* ---------- header ---------- */
+header.top{
+  display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between;
+  padding:20px 22px;border:1px solid var(--line);border-radius:var(--r);
+  background:linear-gradient(135deg,#ffffff,#f3f8fd);box-shadow:var(--shadow);
+  position:relative;overflow:hidden;
+}
+header.top::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,var(--a1),var(--a2),var(--a3));
+  height:2px;opacity:.75;
+}
+.brand{display:flex;gap:14px;align-items:center}
+.logo{
+  width:46px;height:46px;border-radius:12px;flex:0 0 auto;
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  display:grid;place-items:center;font-weight:800;font-size:17px;color:var(--on-accent);
+  box-shadow:0 6px 16px -8px var(--a2);
+}
+h1{margin:0;font-size:21px;letter-spacing:-.02em;font-weight:700}
+.sub{color:var(--dim);font-size:12.5px;margin-top:3px}
+.srcbadge{
+  display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+  font-size:11.5px;color:var(--dim2);
+}
+.chip{
+  border:1px solid var(--line2);border-radius:999px;padding:5px 11px;
+  background:#ffffff;display:inline-flex;gap:7px;align-items:center;
+}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px #0478571f}
+
+/* ---------- tabs ---------- */
+nav.tabs{
+  display:flex;gap:6px;flex-wrap:wrap;margin:18px 0 20px;
+  padding:7px;border:1px solid var(--line);border-radius:var(--r);
+  background:#ffffff;box-shadow:0 6px 18px -16px rgba(23,43,77,.5);
+  position:sticky;top:0;z-index:40;backdrop-filter:blur(10px);
+}
+nav.tabs button{
+  appearance:none;border:1px solid transparent;background:transparent;color:var(--dim);
+  padding:10px 15px;border-radius:10px;cursor:pointer;font:inherit;font-size:13.5px;
+  font-weight:600;display:inline-flex;gap:9px;align-items:center;white-space:nowrap;
+  transition:.16s;
+}
+nav.tabs button:hover{color:var(--txt);background:#eaf0f8}
+nav.tabs button[aria-selected="true"]{
+  color:var(--on-accent);background:linear-gradient(135deg,var(--a1),var(--a2));
+  border-color:transparent;box-shadow:0 8px 20px -12px var(--a2);
+}
+nav.tabs .cnt{
+  font-size:10.5px;background:#e4eaf4;border-radius:6px;padding:1px 6px;font-weight:700;
+}
+nav.tabs button[aria-selected="true"] .cnt{background:#ffffff40;color:var(--on-accent)}
+
+/* ---------- panels ---------- */
+.panel{display:none;animation:rise .3s ease}
+.panel.on{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ---------- kpi ---------- */
+.kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(212px,1fr));margin-bottom:18px}
+.kpi{
+  position:relative;border:1px solid var(--line);border-radius:var(--r);padding:15px 16px;
+  background:linear-gradient(160deg,#ffffff,#f4f8fd);
+  box-shadow:var(--shadow);overflow:hidden;transition:.18s;
+}
+.kpi:hover{border-color:var(--line2);transform:translateY(-2px)}
+.kpi .k-lbl{color:var(--dim);font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;font-weight:700}
+.kpi .k-val{font-size:26px;font-weight:800;letter-spacing:-.025em;margin:7px 0 2px}
+.kpi .k-sub{color:var(--dim2);font-size:11.5px}
+.kpi .k-val small{font-size:14px;font-weight:600;color:var(--dim)}
+.kpi.good .k-val{color:var(--ok)} .kpi.warn .k-val{color:var(--warn)}
+.kpi.bad .k-val{color:var(--bad)} .kpi.info .k-val{color:var(--a1)}
+.ibtn{
+  position:absolute;top:11px;right:11px;width:21px;height:21px;border-radius:50%;
+  border:1px solid var(--ctl);background:#eaf0f8;color:var(--a1);
+  font-size:11px;font-weight:800;cursor:pointer;display:grid;place-items:center;
+  padding:0;line-height:1;transition:.15s;
+}
+.ibtn:hover{background:var(--a1);color:var(--on-accent);border-color:var(--a1)}
+
+/* ---------- tooltip ---------- */
+#tip{
+  position:fixed;z-index:999;max-width:400px;pointer-events:none;opacity:0;
+  transition:opacity .12s;transform:translateY(4px);
+}
+#tip.on{opacity:1;transform:none}
+.tipbox{
+  background:#ffffff;border:1px solid var(--ctl);
+  border-radius:12px;padding:12px 14px;box-shadow:0 18px 44px -18px rgba(23,43,77,.45);
+  font-size:12.5px;line-height:1.5;
+}
+.tipbox b.t-h{display:block;color:var(--a1);font-size:12px;margin-bottom:6px;
+  text-transform:uppercase;letter-spacing:.06em}
+.tipbox .t-row{margin:5px 0}
+.tipbox .t-k{color:var(--dim2);text-transform:uppercase;font-size:10px;letter-spacing:.07em;font-weight:700}
+.tipbox code{
+  background:#eaf2f8;border:1px solid var(--line);border-radius:5px;padding:1px 5px;
+  font-size:11.5px;color:#0b5a72;display:inline-block;margin-top:2px;
+  word-break:break-word;
+}
+.tipbox .t-src{margin-top:8px;padding-top:7px;border-top:1px dashed var(--line2);
+  color:var(--dim2);font-size:10.5px}
+
+/* ---------- card / chart ---------- */
+.grid2{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(430px,1fr))}
+.grid3{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(310px,1fr))}
+.card{
+  border:1px solid var(--line);border-radius:var(--r);background:var(--panel);
+  box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;
+}
+.card > header{
+  display:flex;gap:10px;align-items:flex-start;justify-content:space-between;
+  padding:14px 16px;border-bottom:1px solid var(--line);background:var(--panel2);
+}
+.card h3{margin:0;font-size:14px;font-weight:700;letter-spacing:-.01em}
+.card .c-sub{color:var(--dim2);font-size:11.5px;margin-top:3px;max-width:70ch}
+.card .c-body{padding:14px 16px;overflow:auto}
+.legend{display:flex;flex-wrap:wrap;gap:8px 14px;padding:0 16px 14px}
+.legend span{display:inline-flex;gap:7px;align-items:center;font-size:11.5px;color:var(--dim)}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+
+/* ---------- tables ---------- */
+.tbl-tools{display:flex;gap:9px;flex-wrap:wrap;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--panel2)}
+.tbl-tools input{
+  flex:1 1 220px;min-width:160px;background:#ffffff;color:var(--txt);border-color:var(--ctl);
+  border:1px solid var(--line2);border-radius:9px;padding:8px 11px;font:inherit;font-size:13px;
+}
+.tbl-tools input:focus{outline:none;border-color:var(--a1);box-shadow:0 0 0 3px #0e749030}
+.btn{
+  appearance:none;border:1px solid var(--ctl);background:#ffffff;color:#405473;
+  border-radius:9px;padding:8px 12px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;transition:.15s;
+}
+.btn:hover{color:var(--txt);border-color:var(--a1);background:#eaf0f8}
+.btn.on{background:linear-gradient(135deg,var(--a1),var(--a2));color:var(--on-accent);border-color:transparent}
+.tscroll{overflow:auto;max-height:640px}
+table{border-collapse:separate;border-spacing:0;width:100%;font-size:12.8px}
+thead th{
+  position:sticky;top:0;z-index:2;background:#eef3f9;
+  text-align:left;padding:9px 12px;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--dim);border-bottom:1px solid var(--line2);font-weight:700;white-space:nowrap;cursor:pointer;
+  user-select:none;
+}
+thead th:hover{color:var(--a1)}
+thead th.sorted{color:var(--a1)}
+thead th .ar{opacity:.5;font-size:9px;margin-left:3px}
+tbody td{padding:8px 12px;border-bottom:1px solid #e4eaf2;vertical-align:top}
+tbody tr:hover td{background:#f0f5fc}
+tbody tr.total td{background:#dfe9fb;font-weight:700;color:#0b5a72}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+.tag{
+  display:inline-block;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;
+  border:1px solid var(--ctl);background:#eef2f9;color:#33455f;white-space:nowrap;
+}
+.t-sistema{color:#4338ca;border-color:#b6b9f4;background:#eef0fe}
+.t-borra{color:#9f1239;border-color:#efa9b8;background:#fdeef2}
+.t-promo{color:#9d174d;border-color:#efaac8;background:#fdf0f6}
+.t-atraso{color:#92400e;border-color:#e8bd75;background:#fdf3e7}
+details.raw{border:1px solid var(--ctl);border-radius:var(--r);background:#ffffff;margin-top:6px;overflow:hidden}
+details.raw > summary{
+  cursor:pointer;padding:13px 16px;font-weight:700;font-size:13.5px;list-style:none;
+  display:flex;align-items:center;gap:10px;background:var(--panel2);border-bottom:1px solid transparent;
+}
+details.raw[open] > summary{border-bottom-color:var(--line2)}
+details.raw > summary::-webkit-details-marker{display:none}
+details.raw > summary::before{content:'\25B8';color:var(--a1);font-size:11px;transition:.15s}
+details.raw[open] > summary::before{transform:rotate(90deg)}
+details.raw > summary:hover{background:#eaf0f8}
+details.raw .raw-hint{margin-left:auto;font-weight:400;font-size:11.5px;color:var(--dim)}
+details.raw pre{
+  margin:0;padding:15px 16px;max-height:460px;overflow:auto;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:11.5px;line-height:1.55;color:#22304a;white-space:pre;tab-size:4;
+  background:#fbfcfe;
+}
+details.raw pre mark{background:#fef3c7;color:#78350f;border-radius:3px;padding:0 2px}
+details.raw .raw-nav{display:flex;gap:7px;flex-wrap:wrap;padding:11px 16px 0}
+details.raw .raw-nav button{
+  font:inherit;font-size:11.5px;padding:5px 10px;border-radius:999px;cursor:pointer;
+  background:#eef2f9;border:1px solid var(--ctl);color:#405473;
+}
+details.raw .raw-nav button:hover{color:var(--txt);border-color:var(--a1)}
+.pager{
+  display:flex;gap:9px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+  padding:11px 16px;border-top:1px solid var(--line);background:var(--panel2);font-size:12px;color:var(--dim);
+}
+.pager .pgs{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.pager .pgs button{
+  min-width:32px;height:30px;border:1px solid var(--ctl);background:#ffffff;color:#405473;
+  border-radius:8px;cursor:pointer;font:inherit;font-size:12px;font-weight:600;
+}
+.pager .pgs button:hover{background:#eaf0f8;color:var(--txt)}
+.pager .pgs button.on{background:linear-gradient(135deg,var(--a1),var(--a2));color:var(--on-accent);border-color:transparent}
+.empty{padding:26px 16px;text-align:center;color:var(--dim2);font-size:13px}
+
+/* ---------- notes ---------- */
+.note-txt{min-width:280px;max-width:640px;white-space:pre-wrap;word-break:break-word;font-size:12.4px;color:#33455f}
+.sec-title{
+  display:flex;gap:10px;align-items:center;margin:22px 0 12px;
+  font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);font-weight:800;
+}
+.sec-title::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line2),transparent)}
+
+/* ---------- alerts / cross ---------- */
+.alert{
+  display:flex;gap:12px;padding:13px 15px;border-radius:12px;align-items:flex-start;
+  border:1px solid var(--line2);background:var(--panel);
+}
+.alert .ic{
+  width:26px;height:26px;border-radius:8px;display:grid;place-items:center;flex:0 0 auto;
+  font-size:14px;font-weight:800;
+}
+.alert.a-bad{border-color:#f4c3ce;background:#fef4f6} .alert.a-bad .ic{background:#fbdbe2;color:#9f1239}
+.alert.a-warn{border-color:#f3d5a3;background:#fffbf2} .alert.a-warn .ic{background:#fbeacb;color:#92400e}
+.alert.a-ok{border-color:#b7e2d0;background:#f2fbf7} .alert.a-ok .ic{background:#d3f0e3;color:#065f46}
+.alert.a-info{border-color:#c3d5f5;background:#f3f7fe} .alert.a-info .ic{background:#dce8fb;color:#1e40af}
+.alert h4{margin:0 0 4px;font-size:13px}
+.alert p{margin:0;font-size:12.3px;color:var(--dim);line-height:1.5}
+.alert .tags{margin-top:7px;display:flex;gap:6px;flex-wrap:wrap}
+.xref{
+  display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;
+  background:#e6eefb;border:1px solid var(--ctl);color:#0b5a72;
+}
+.xref:hover{border-color:var(--a1)}
+
+/* ---------- charts ---------- */
+svg{display:block;overflow:visible}
+.bar{transition:.15s;cursor:pointer}
+.bar:hover{opacity:.8}
+.donut-s{cursor:pointer;transition:.15s}
+.donut-s:hover{opacity:.82}
+.donut-c{transition:.2s;transform-origin:center}
+.axis{stroke:var(--line2);stroke-width:1}
+.axis-t{fill:var(--dim2);font-size:10px}
+.gv{fill:var(--a1);font-size:10.5px;font-weight:700}
+.hit{fill:transparent;cursor:pointer}
+.spark-l{fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.note{font-size:11.5px;color:var(--dim2);padding:0 16px 14px;line-height:1.5}
+footer.foot{margin-top:34px;padding-top:18px;border-top:1px solid var(--line);
+  color:var(--dim2);font-size:11.5px;line-height:1.7}
+footer.foot b{color:var(--dim)}
+@media(max-width:760px){
+  .wrap{padding:14px 12px 60px}
+  h1{font-size:17px} nav.tabs{gap:4px} nav.tabs button{padding:8px 11px;font-size:12.5px}
+  .grid2,.grid3{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div class="brand">
+    <div class="logo">INO</div>
+    <div>
+      <h1 id="h1-title">Control Diario de Clínica</h1>
+      <div class="sub" id="h1-sub">Cargando…</div>
+    </div>
+  </div>
+  <div class="srcbadge">
+    <span class="chip" id="chip-cuenta"><span class="dot"></span>Cuenta corporativa</span>
+    <span class="chip" id="chip-integrity">—</span>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs" role="tablist"></nav>
+
+<main id="panels"></main>
+
+<footer class="foot">
+  <b>Procedencia.</b> Los <span id="prov-n"></span> correos fueron leídos desde la cuenta corporativa y extraídos íntegros vía API de Gmail
+  (cuerpos <code>text/plain</code> completos, sin el recorte de 50 KB de la API de lectura).
+  Cada cifra mostrada proviene literalmente de esos correos; los KPIs del dashboard son derivados y su fórmula
+  aparece en el tooltip de cada tarjeta.<br>
+  <b>Alcance temporal.</b> Los reportes corresponden al día <span id="foot-dia">—</span> y a la madrugada del
+  <span id="foot-dia2">—</span>. «Deuda» acumula saldos históricos y no es del día. «Convenios Últimos 6 Meses»
+  cierra en la fecha del reporte, por lo que el último mes es <b>parcial</b> y no es comparable con los meses completos.<br>
+  <b>Privacidad.</b> Contiene datos personales de pacientes y funcionarios: información legal confidencial y privilegiada.
+  No distribuir fuera de la organización.
+</footer>
+</div>
+
+<div id="tip"><div class="tipbox"></div></div>
+
+<script id="payload" type="application/json">/*__DATA__*/</script>
+<script>
+/* ==================================================================
+   1. Datos y utilidades
+   ================================================================== */
+const D = JSON.parse(document.getElementById('payload').textContent);
+const $ = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
+const str = v => typeof v==='string' ? v.trim() : null;
+const clp = v => v==null ? '—' : (str(v) ?? '$'+Math.round(v).toLocaleString('es-CL'));
+const clpk= v => v==null ? '—' : (str(v) ?? '$'+(v/1000).toLocaleString('es-CL',{maximumFractionDigits:0})+'k');
+const clpm= v => v==null ? '—' : (str(v) ?? '$'+(v/1e6).toLocaleString('es-CL',{maximumFractionDigits:1})+'M');
+const n0  = v => v==null ? '—' : (str(v) ?? Math.round(v).toLocaleString('es-CL'));
+const n1  = v => v==null ? '—' : (str(v) ?? v.toLocaleString('es-CL',{maximumFractionDigits:1}));
+const pc  = v => v==null ? '—' : v.toLocaleString('es-CL',{maximumFractionDigits:1})+'%';
+const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const parseNum=s=>{
+  const t=String(s??'').replace(/[^0-9,.\-]/g,'');
+  if(!t) return 0;
+  if(t.includes(',')) return parseFloat(t.replace(/\./g,'').replace(',','.'))||0;
+  const p=t.split('.');
+  if(p.length>1 && p.slice(1).every(x=>x.length===3)) return parseFloat(t.replace(/\./g,''))||0;
+  return parseFloat(t)||0;
+};
+
+/* ---------- Fecha del lote: se deriva del primer borra_fecha o del proceso ---------- */
+const FECHA_LOTE = (()=>{
+  // Se arma con la fecha más frecuente entre las notas BORRA CITA, o con la fecha del primer proceso
+  const counts={};
+  (D.notas?.notas||[]).forEach(x=>{ if(x.borra_fecha) counts[x.borra_fecha]=(counts[x.borra_fecha]||0)+1; });
+  const best=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+  if(best) return best[0];
+  const p=D.procesos?.procesos?.[0];
+  if(p) return p.fecha;
+  return '—';
+})();
+const FECHA_LOTE_D2 = (()=>{
+  const p=D.procesos?.procesos?.[0];
+  if(p) return p.fecha;
+  return FECHA_LOTE;
+})();
+// §5.4: el remitente y la cuenta se leen del propio lote, nunca se escriben a mano.
+const REMITENTE = (()=>{
+  const m=(D.meta?.remitente)||'';
+  return m || 'el remitente del lote';
+})();
+const CUENTA_CORP = (()=>{
+  const c=(D.meta?.cuenta)||'';
+  return c || 'cuenta corporativa';
+})();
+
+/* ---------- Tooltip compartido ---------- */
+const tipEl = $('#tip'), tipBox = $('.tipbox', tipEl);
+function tipShow(html, ev){
+  tipBox.innerHTML = html;
+  tipEl.classList.add('on');
+  if(ev) tipMove(ev);
+}
+function tipMove(ev){
+  const r = tipBox.getBoundingClientRect();
+  let x = ev.clientX + 16, y = ev.clientY + 16;
+  if(x + r.width  > innerWidth  - 10) x = ev.clientX - r.width  - 16;
+  if(y + r.height > innerHeight - 10) y = ev.clientY - r.height - 16;
+  tipEl.style.left = Math.max(8,x)+'px';
+  tipEl.style.top  = Math.max(8,y)+'px';
+}
+function tipHide(){ tipEl.classList.remove('on') }
+
+const kpiTip = k => `<b class="t-h">${esc(k.label)}</b>
+  <div class="t-row"><span class="t-k">Qué representa</span><br>${esc(k.desc)}</div>
+  <div class="t-row"><span class="t-k">Cómo se calcula</span><br><code>${esc(k.calc)}</code></div>
+  ${k.src?`<div class="t-src">Fuente: ${esc(k.src)}</div>`:''}`;
+
+function kpiCard(k){
+  const d = document.createElement('div');
+  d.className = 'kpi '+(k.tone||'');
+  d.innerHTML = `<button class="ibtn" aria-label="Cómo se calcula">i</button>
+    <div class="k-lbl">${esc(k.label)}</div>
+    <div class="k-val num">${k.value}${k.unit?`<small> ${esc(k.unit)}</small>`:''}</div>
+    <div class="k-sub">${esc(k.sub||'')}</div>`;
+  const b = $('.ibtn', d);
+  b.addEventListener('mouseenter',e=>tipShow(kpiTip(k),e));
+  b.addEventListener('mousemove',tipMove);
+  b.addEventListener('mouseleave',tipHide);
+  b.addEventListener('click',e=>{e.stopPropagation(); tipShow(kpiTip(k), e);});
+  d.addEventListener('click',e=>{ if(e.target===b) return; tipShow(kpiTip(k), e); });
+  return d;
+}
+function kpiGrid(items){ const g=document.createElement('div'); g.className='kpis'; items.forEach(k=>g.appendChild(kpiCard(k))); return g; }
+
+/* ==================================================================
+   2. Gráficos SVG (vanilla) con tooltip
+   ================================================================== */
+const NS='http://www.w3.org/2000/svg';
+const svg = (t,a={}) => { const e=document.createElementNS(NS,t); for(const k in a) e.setAttribute(k,a[k]); return e; };
+const PAL = ['#0e7490','#4f46e5','#be185d','#047857','#b45309','#1d4ed8','#7c3aed','#be123c','#0f766e','#c2410c'];
+
+function barH(host, rows, opt={}){
+  const fmt = opt.fmt||n0, tip = opt.tip||((r)=>`${esc(r.label)}: <b>${fmt(r.value)}</b>`);
+  const lbW = opt.labelW||150, rowH = opt.rowH||26, padR = 58, H = rows.length*rowH+8;
+  const max = Math.max(...rows.map(r=>r.value||0), 1);
+  const uid='bar'+barH.seq++;
+  const s = svg('svg',{width:'100%',height:H,viewBox:`0 0 900 ${H}`});
+  const defs = svg('defs');
+  const g1=svg('linearGradient',{id:uid+'a',x1:'0',y1:'0',x2:'1',y2:'0'});
+  g1.appendChild(svg('stop',{offset:'0','stop-color':'#0e7490'}));
+  g1.appendChild(svg('stop',{offset:'1','stop-color':'#4f46e5'}));
+  const g2=svg('linearGradient',{id:uid+'b',x1:'0',y1:'0',x2:'1',y2:'0'});
+  g2.appendChild(svg('stop',{offset:'0','stop-color':'#0891b2'}));
+  g2.appendChild(svg('stop',{offset:'1','stop-color':'#6366f1'}));
+  defs.appendChild(g1); defs.appendChild(g2); s.appendChild(defs);
+  const W = 900-lbW-padR;
+  rows.forEach((r,i)=>{
+    const y=i*rowH+4, w=Math.max((r.value||0)/max*W,1.5);
+    const g=svg('g',{});
+    const t=svg('text',{x:lbW-8,y:y+12,'text-anchor':'end',class:'axis-t',fill:'#5a6b85'});
+    t.textContent = r.label.length>26 ? r.label.slice(0,25)+'…' : r.label;
+    g.appendChild(t);
+    const b=svg('rect',{x:lbW,y,width:w,height:rowH-9,rx:4,class:'bar',fill:`url(#${uid}a)`});
+    g.appendChild(b);
+    const vt=svg('text',{x:lbW+w+7,y:y+12,class:'gv'});
+    vt.textContent = fmt(r.value);
+    g.appendChild(vt);
+    const hit=svg('rect',{x:0,y:i*rowH,width:900,height:rowH,class:'hit'});
+    g.appendChild(hit);
+    const show=e=>{b.setAttribute('fill',`url(#${uid}b)`);tipShow(`<b class="t-h">${esc(r.label)}</b>${tip(r)}`,e);};
+    const hide=()=>{b.setAttribute('fill',`url(#${uid}a)`);tipHide();};
+    hit.addEventListener('mouseenter',show);
+    hit.addEventListener('mousemove',tipMove);
+    hit.addEventListener('mouseleave',hide);
+    s.appendChild(g);
+  });
+  host.innerHTML=''; host.appendChild(s);
+}
+barH.seq=0;
+
+function donut(host, rows, opt={}){
+  const fmt=opt.fmt||n0, size=210, R=88, r=56, cx=size/2, cy=size/2;
+  const total = rows.reduce((a,b)=>a+(b.value||0),0)||1;
+  const s=svg('svg',{width:size,height:size,viewBox:`0 0 ${size} ${size}`});
+  let a0=-Math.PI/2;
+  rows.forEach((row,i)=>{
+    const frac=(row.value||0)/total, a1=a0+frac*2*Math.PI;
+    const big=(a1-a0)>Math.PI?1:0;
+    const p=['M',cx+R*Math.cos(a0),cy+R*Math.sin(a0),
+             'A',R,R,0,big,1,cx+R*Math.cos(a1),cy+R*Math.sin(a1),
+             'L',cx+r*Math.cos(a1),cy+r*Math.sin(a1),
+             'A',r,r,0,big,0,cx+r*Math.cos(a0),cy+r*Math.sin(a0),'Z'].join(' ');
+    const path=svg('path',{d:p,fill:row.color||PAL[i%PAL.length],class:'donut-s'});
+    path.addEventListener('mouseenter',e=>tipShow(
+      `<b class="t-h">${esc(row.label)}</b>
+       <div class="t-row"><span class="t-k">Valor</span> <b>${fmt(row.value)}</b></div>
+       <div class="t-row"><span class="t-k">Participación</span> <b>${pc(frac*100)}</b> del total ${fmt(total)}</div>
+       ${opt.tip?`<div class="t-row">${opt.tip(row)}</div>`:''}`,e));
+    path.addEventListener('mousemove',tipMove);
+    path.addEventListener('mouseleave',tipHide);
+    s.appendChild(path);
+    a0=a1;
+  });
+  const t=svg('text',{x:cx,y:cy-2,'text-anchor':'middle',fill:'#152238','font-size':'19','font-weight':'800'});
+  t.textContent=opt.center||fmt(total);
+  s.appendChild(t);
+  const t2=svg('text',{x:cx,y:cy+15,'text-anchor':'middle',fill:'#5a6b85','font-size':'10'});
+  t2.textContent=opt.centerLabel||'TOTAL';
+  s.appendChild(t2);
+  host.innerHTML=''; host.appendChild(s);
+  const lg=document.createElement('div'); lg.className='legend'; lg.style.padding='10px 0 0';
+  rows.forEach((row,i)=>{
+    const sp=document.createElement('span');
+    sp.innerHTML=`<i style="background:${row.color||PAL[i%PAL.length]}"></i>${esc(row.label)} · <b style="color:#152238">${fmt(row.value)}</b> <span style="color:#5a6b85">(${pc((row.value||0)/total*100)})</span>`;
+    lg.appendChild(sp);
+  });
+  host.appendChild(lg);
+}
+
+function barsV(host, rows, opt={}){
+  const fmt=opt.fmt||n0, H=210, W=760, padL=8, padB=34, padT=22;
+  const max=Math.max(...rows.map(r=>r.value||0),1);
+  const bw=(W-padL*2)/rows.length;
+  const s=svg('svg',{width:'100%',height:H,viewBox:`0 0 ${W} ${H}`});
+  const defs=svg('defs');
+  const vid='bv'+barsV.seq++;
+  const g1=svg('linearGradient',{id:vid,x1:'0',y1:'0',x2:'0',y2:'1'});
+  g1.appendChild(svg('stop',{offset:'0','stop-color':'#4f46e5'}));
+  g1.appendChild(svg('stop',{offset:'1','stop-color':'#0e7490'}));
+  defs.appendChild(g1); s.appendChild(defs);
+  s.appendChild(svg('line',{x1:padL,y1:padT,x2:W-padL,y2:padT,class:'axis'}));
+  rows.forEach((r,i)=>{
+    const h=(r.value||0)/max*(H-padT-padB), x=padL+i*bw+bw*0.16, y=H-padB-h, w=bw*0.68;
+    const g=svg('g',{});
+    g.appendChild(svg('rect',{x,y,width:w,height:Math.max(h,1.5),rx:4,fill:`url(#${vid})`,class:'bar'}));
+    const vt=svg('text',{x:x+w/2,y:y-6,'text-anchor':'middle',class:'gv'});
+    vt.textContent=fmt(r.value); g.appendChild(vt);
+    const lt=svg('text',{x:x+w/2,y:H-padB+15,'text-anchor':'middle',class:'axis-t'});
+    lt.textContent=r.label; g.appendChild(lt);
+    const hit=svg('rect',{x:padL+i*bw,y:0,width:bw,height:H,class:'hit'});
+    g.appendChild(hit);
+    const show=e=>tipShow(`<b class="t-h">${esc(r.label)}</b><div class="t-row">${opt.tip?opt.tip(r):`Valor: <b>${fmt(r.value)}</b>`}</div>`,e);
+    hit.addEventListener('mouseenter',show); hit.addEventListener('mousemove',tipMove);
+    hit.addEventListener('mouseleave',tipHide);
+    s.appendChild(g);
+  });
+  host.innerHTML=''; host.appendChild(s);
+}
+barsV.seq=0;
+
+function lineChart(host, series, opt={}){
+  const fmt=opt.fmt||n0, H=215, W=760, pl=64, pr=16, pt=18, pb=30;
+  const all=series.flatMap(s=>s.data.map(d=>d.value));
+  const max=Math.max(...all,1), min=Math.min(...all,0);
+  const sx=i=>pl+i*(W-pl-pr)/Math.max(series[0].data.length-1,1);
+  const sy=v=>H-pb-(v-min)/((max-min)||1)*(H-pt-pb);
+  const s=svg('svg',{width:'100%',height:H,viewBox:`0 0 ${W} ${H}`});
+  [0,.25,.5,.75,1].forEach(f=>{
+    const y=pt+f*(H-pt-pb), v=max-f*(max-min);
+    s.appendChild(svg('line',{x1:pl,y1:y,x2:W-pr,y2:y,class:'axis',opacity:.35}));
+    const t=svg('text',{x:pl-8,y:y+4,'text-anchor':'end',class:'axis-t'}); t.textContent=fmt(v); s.appendChild(t);
+  });
+  series.forEach((se,si)=>{
+    const col=se.color||PAL[si%PAL.length];
+    const d=se.data.map((p,i)=>`${i?'L':'M'}${sx(i)},${sy(p.value)}`).join(' ');
+    s.appendChild(svg('path',{d,stroke:col,'stroke-width':2.6,fill:'none','stroke-linecap':'round','stroke-linejoin':'round'}));
+    se.data.forEach((p,i)=>{
+      const g=svg('g',{});
+      g.appendChild(svg('circle',{cx:sx(i),cy:sy(p.value),r:4,fill:col,stroke:'#ffffff','stroke-width':2}));
+      const t=svg('text',{x:sx(i),y:H-pb+15,'text-anchor':'middle',class:'axis-t'}); t.textContent=p.label; g.appendChild(t);
+      const hit=svg('rect',{x:sx(i)-22,y:0,width:44,height:H,class:'hit'}); g.appendChild(hit);
+      hit.addEventListener('mouseenter',e=>tipShow(
+        `<b class="t-h">${esc(se.name)} · ${esc(p.label)}</b>
+         <div class="t-row"><span class="t-k">Valor</span> <b>${fmt(p.value)}</b></div>
+         ${p.note?`<div class="t-row">${p.note}</div>`:''}`,e));
+      hit.addEventListener('mousemove',tipMove); hit.addEventListener('mouseleave',tipHide);
+      s.appendChild(g);
+    });
+  });
+  host.innerHTML=''; host.appendChild(s);
+}
+
+function card(title, sub, bodyEl, note){
+  const c=document.createElement('div'); c.className='card';
+  const h=document.createElement('header');
+  h.innerHTML=`<div><h3>${esc(title)}</h3>${sub?`<div class="c-sub">${esc(sub)}</div>`:''}</div>`;
+  c.appendChild(h);
+  if(bodyEl){ const b=document.createElement('div'); b.className='c-body'; b.appendChild(bodyEl); c.appendChild(b); }
+  if(note){ const n=document.createElement('div'); n.className='note'; n.innerHTML=note; c.appendChild(n); }
+  return c;
+}
+function chartCard(title, sub, draw, note){
+  const host=document.createElement('div');
+  const c=card(title,sub,host,note);
+  if(sub){
+    const h3=$('h3',c);
+    h3.style.cursor='help';
+    h3.addEventListener('mouseenter',e=>tipShow(
+      `<b class="t-h">${esc(title)}</b>
+       <div class="t-row"><span class="t-k">Qué representa</span><br>${esc(sub)}</div>
+       ${note?`<div class="t-row"><span class="t-k">Cómo se lee</span><br>${note}</div>`:''}
+       <div class="t-src">Pasa el cursor sobre cada barra o segmento para ver su valor exacto.</div>`,e));
+    h3.addEventListener('mousemove',tipMove);
+    h3.addEventListener('mouseleave',tipHide);
+  }
+  requestAnimationFrame(()=>draw(host));
+  return c;
+}
+function tableCard(title, sub, tableSpec, note){
+  const c=document.createElement('div'); c.className='card';
+  const h=document.createElement('header');
+  h.innerHTML=`<div><h3>${esc(title)}</h3>${sub?`<div class="c-sub">${esc(sub)}</div>`:''}</div>`;
+  c.appendChild(h);
+  c.appendChild(makeTable(tableSpec));
+  if(note){ const n=document.createElement('div'); n.className='note'; n.innerHTML=note; c.appendChild(n); }
+  return c;
+}
+
+const TAG_RULES = [
+  [/SISTEMA|MANUAL|APERTURA/i,                       't-sistema'],
+  [/BORRA|ANULAD|REEMBOL|CANCELA|RECIBO|PENDIENTE/i,'t-borra'],
+  [/PROMOCION|PROMO|VENTA|NUEVO/i,                  't-promo'],
+  [/ATRAS|RETRAS|URGENTE/i,                         't-atraso'],
+];
+const tagClass = t => (TAG_RULES.find(([re])=>re.test(String(t||'')) )||[])[1] || '';
+
+const TABLE_STATE = new Map();
+function makeTable(spec){
+  const {id, cols, rows, pageSize=25, totalRow=false, tagCol, searchable=null, height} = spec;
+  if(tagCol!=null) cols.forEach(c=>{
+    if(c.key===tagCol && !c.tag) c.tag = r => tagClass(c.num ? r[0] : String(r[0]));
+  });
+  const st = TABLE_STATE.get(id) || {q:'',sort:null,dir:1,page:0,size:pageSize};
+  TABLE_STATE.set(id, st);
+
+  const tools=document.createElement('div'); tools.className='tbl-tools';
+  tools.innerHTML=`<input type="search" placeholder="Buscar en ${rows.length} filas…" value="${esc(st.q)}">
+    <button class="btn" data-a="csv">⬇ CSV</button>
+    <button class="btn" data-a="all">Ver todo</button>`;
+  const inp=$('input',tools);
+  const sc=document.createElement('div'); sc.className='tscroll'; if(height) sc.style.maxHeight=height;
+
+  const pager=document.createElement('div'); pager.className='pager';
+  const wrap=document.createElement('div'); wrap.appendChild(tools); wrap.appendChild(sc); wrap.appendChild(pager);
+  const root=document.createElement('div'); root.appendChild(wrap);
+
+  const hay = searchable || (r => r.join(' ').toLowerCase());
+
+  function render(){
+    let data = rows;
+    if(st.q){ const q=st.q.toLowerCase(); data = rows.filter(r=>hay(r).includes(q)); }
+    if(st.sort!=null){
+      const c=st.sort, k=cols[c].key;
+      data=[...data].sort((a,b)=>{
+        const x=a[c], y=b[c], nx=parseNum(x), ny=parseNum(y);
+        if(cols[c].num) return (nx-ny)*st.dir;
+        return String(x??'').localeCompare(String(y??''),'es',{numeric:true})*st.dir;
+      });
+    }
+    const showAll = st.size===0;
+    const total=data.length;
+    const pages = showAll?1:Math.max(1,Math.ceil(total/st.size));
+    st.page=Math.min(st.page,pages-1);
+    const view = showAll?data:data.slice(st.page*st.size,(st.page+1)*st.size);
+
+    let h='<table><thead><tr>';
+    cols.forEach((c,i)=>{
+      const on = st.sort===i;
+      h+=`<th class="${c.num?'r':''} ${on?'sorted':''}" data-i="${i}" title="Ordenar por ${esc(c.t)}">${esc(c.t)}${on?`<span class="ar">${st.dir>0?'▲':'▼'}</span>`:''}</th>`;
+    });
+    h+='</tr></thead><tbody>';
+    for(const r of view){
+      const isTot = totalRow && /^total/i.test(String(r[0]??''));
+      h+=`<tr class="${isTot?'total':''}">`;
+      r.forEach((cell,i)=>{
+        const c=cols[i];
+        if(c.tag){
+          const cls = typeof c.tag==='function'? c.tag(r): '';
+          h+=`<td>${cls?`<span class="tag ${cls}">${esc(cell)}</span>`:esc(cell)}</td>`;
+        } else if(c.cls==='note'){
+          h+=`<td><div class="note-txt">${esc(cell)}</div></td>`;
+        } else {
+          h+=`<td class="${c.num?'r num':''}">${c.fmt?c.fmt(cell,r):esc(cell)}</td>`;
+        }
+      });
+      h+='</tr>';
+    }
+    if(!view.length) h+=`<tr><td colspan="${cols.length}" class="empty">Sin coincidencias para «${esc(st.q)}»</td></tr>`;
+    h+='</tbody></table>';
+    sc.innerHTML=h;
+
+    $$('th',sc).forEach(th=>th.addEventListener('click',()=>{
+      const i=+th.dataset.i;
+      if(st.sort===i) st.dir*=-1; else {st.sort=i; st.dir=1;}
+      render();
+    }));
+
+    pager.innerHTML=`<span class="num">${n0(total)} filas${st.q?` (filtrado de ${n0(rows.length)})`:''} · ${showAll?'mostrando todas':`página ${st.page+1} de ${n0(pages)}`}</span>
+      <span class="pgs">
+        <button data-p="0">«</button>
+        <button data-p="${Math.max(0,st.page-1)}">‹</button>
+        ${pageBtns(st.page,pages)}
+        <button data-p="${Math.min(pages-1,st.page+1)}">›</button>
+        <button data-p="${pages-1}">»</button>
+        <button data-p="all" class="${showAll?'on':''}">${showAll?'Todos':'Ver todo'}</button>
+      </span>`;
+    $$('button',pager).forEach(b=>b.addEventListener('click',()=>{
+      const p=b.dataset.p;
+      if(p==='all'){ st.size = st.size===0?pageSize:0; }
+      else st.page=+p;
+      render();
+    }));
+  }
+
+  function exportCsv(){
+    const head=[cols.map(c=>c.t).join(';')].join('\n');
+    const body=rows.map(r=>r.map(x=>`"${String(x??'').replace(/"/g,'""')}"`).join(';')).join('\n');
+    const blob=new Blob(['\ufeff'+head+'\n'+body],{type:'text/csv;charset=utf-8'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download=(spec.file||id)+'.csv'; a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  inp.addEventListener('input',()=>{ st.q=inp.value; st.page=0; render(); });
+  tools.addEventListener('click',e=>{
+    const a=e.target.dataset.a;
+    if(a==='csv') exportCsv();
+    if(a==='all'){ st.size = st.size===0?pageSize:0; st.page=0; render(); }
+  });
+  render();
+  return root;
+}
+function pageBtns(cur,pages){
+  const out=[]; const add=p=>out.push(`<button data-p="${p}" class="${p===cur?'on':''}">${p+1}</button>`);
+  const w=1;
+  let last=-1;
+  for(let p=0;p<pages;p++){
+    if(p===0||p===pages-1||Math.abs(p-cur)<=w){
+      if(last>=0 && p-last>1) out.push('<span style="color:#5a6b85;padding:0 3px">…</span>');
+      add(p); last=p;
+    }
+  }
+  return out.join('');
+}
+
+/* ==================================================================
+   3. Cálculos de KPIs
+   ================================================================== */
+const C=D.contable, A=D.agenda, B=D.becas, P=D.procesos, F=D.funcionarios, N=D.notas;
+
+const Cnt = {
+  pagos:      (C.ingresos_pago||[]).filter(r=>!r.es_total),
+  pagoTotal:  (C.ingresos_pago||[]).find(r=>r.es_total)?.monto||0,
+  tarjetas:   C.tarjetas||{},
+  prev:       (C.ingresos_prevision||[]).filter(r=>String(r.prevision).toUpperCase()!=='TOTAL'),
+  prevTotal:  (C.ingresos_prevision||[]).find(r=>String(r.prevision).toUpperCase()==='TOTAL')||{cantidad:0,monto:0},
+  boletas:    (C.boletas_usuario||[]).filter(r=>String(r.usuario).toUpperCase()!=='TOTAL'),
+  bolTotal:   (C.boletas_usuario||[]).find(r=>String(r.usuario).toUpperCase()==='TOTAL')||{cantidad:0,monto:0},
+  deuda:      (C.deuda||[]).slice().sort((x,y)=>String(x.mes).localeCompare(String(y.mes))),
+};
+const suma = (arr,f) => arr.reduce((a,b)=>a+(f(b)||0),0);
+
+const KP = {
+  ingresoDia:   Cnt.pagoTotal,
+  boletasDia:   Cnt.bolTotal.cantidad,
+  ticketProm:   Cnt.bolTotal.cantidad ? Cnt.pagoTotal/Cnt.bolTotal.cantidad : 0,
+  deudaActual:  Cnt.deuda.length ? Cnt.deuda[Cnt.deuda.length-1].deuda : 0,
+  deudaVar:     Cnt.deuda.length>1 ? (Cnt.deuda[Cnt.deuda.length-1].deuda/Cnt.deuda[0].deuda-1)*100 : 0,
+  citasHoy:     (A.estado_hoy||[]).find(r=>String(r.estado).toUpperCase()==='TOTAL')?.cantidad || 0,
+  terminadas:   (A.estado_hoy||[]).find(r=>r.estado==='Terminada')?.cantidad || 0,
+  bloqueos:     (A.estado_hoy||[]).find(r=>r.estado==='Bloqueo')?.cantidad || 0,
+  suspendidas:  (A.estado_hoy||[]).find(r=>r.estado==='Suspendida')?.cantidad || 0,
+  manana:       (A.manana||[])[0]?.cantidad || 0,
+  citasPrevMan: (A.citas_prevision||[]).find(r=>String(r.prevision).toUpperCase()==='TOTAL')?.cantidad || 0,
+  becas:        B.total_becas||0,
+  convenios:    B.total_convenios||0,
+  convMonto:    B.convenios_total_declarado||0,
+  totalNotas:   (N.notas||[]).length,
+  notasAdmin:   N.totales_declarados?.administrativas||0,
+  notasDoc:     N.totales_declarados?.doctores||0,
+  asistentes:   (F.rendimiento||[]).length,
+  citasAsist:   suma(F.rendimiento||[],r=>r.citas),
+  informes:     suma(F.informes||[],b=>b.subtotal_calculado),
+  productos:    suma(F.productos||[],b=>b.subtotal_calculado),
+  acciones:     suma(F.acciones||[],r=>r.cantidad),
+  tiposAccion:  (F.acciones||[]).length,
+  procesos:     P.total||0,
+  recordatorios: suma((P.procesos||[]).filter(r=>/Recordatorio/.test(r.proceso)),r=>r.cantidad),
+};
+KP.citasUtiles   = KP.citasHoy - KP.bloqueos;
+KP.tasaTerm      = KP.citasUtiles? KP.terminadas/KP.citasUtiles*100 : 0;
+KP.noShow        = (N.notas||[]).filter(x=>x.tipo==='Paciente atrasado').length;
+KP.noShowPct     = KP.citasUtiles? KP.noShow/KP.citasUtiles*100 : 0;
+KP.borraCita     = (N.notas||[]).filter(x=>x.tipo==='Borra cita').length;
+KP.borraPct      = KP.notasAdmin? KP.borraCita/KP.notasAdmin*100 : 0;
+KP.borraFechaTotal = (N.notas||[]).filter(x=>x.borra_fecha).length;
+KP.sistemaNotas  = (N.notas||[]).filter(x=>x.es_sistema).length;
+KP.sistemaPct    = KP.notasAdmin? KP.sistemaNotas/KP.notasAdmin*100 : 0;
+KP.ingresoCita   = KP.terminadas? KP.ingresoDia/KP.terminadas : 0;
+KP.ingresoAccion = KP.acciones? KP.ingresoDia/KP.acciones : 0;
+KP.notasCita     = KP.terminadas? KP.totalNotas/KP.terminadas : 0;
+KP.proyeccion    = KP.manana*KP.ticketProm;
+KP.diasDeuda     = KP.ingresoDia? KP.deudaActual/KP.ingresoDia : 0;
+KP.citasAsistProm= KP.asistentes? KP.citasAsist/KP.asistentes : 0;
+KP.difPrevBol    = (Cnt.prevTotal.monto||0) - Cnt.pagoTotal;
+KP.difPrevBolN   = (Cnt.prevTotal.cantidad||0) - Cnt.bolTotal.cantidad;
+KP.mixCajaTarjeta= (Cnt.pagos.find(r=>r.tipo==='CAJA - TARJETA')||{}).monto||0;
+KP.mixEfectivo   = (Cnt.pagos.find(r=>r.tipo==='CAJA - EFECTIVO')||{}).monto||0;
+KP.mixWebpay     = (Cnt.pagos.find(r=>r.tipo==='WEBPAY')||{}).monto||0;
+KP.mixTotem      = (Cnt.pagos.find(r=>r.tipo==='TOTEM')||{}).monto||0;
+KP.convPct       = KP.ingresoDia? KP.convMonto/KP.ingresoDia*100 : 0;
+KP.conveniosMes  = (B.mensual||[]).find(r=>String(r.tipo).toUpperCase()==='TODOS')?.valores||[];
+KP.top5Boletas   = suma(Cnt.boletas.slice().sort((x,y)=>(y.monto||0)-(x.monto||0)).slice(0,5),r=>r.monto);
+KP.conc5         = KP.ingresoDia? KP.top5Boletas/KP.ingresoDia*100 : 0;
+
+/* tipo de nota mas frecuente */
+const tipoCount = {};
+(N.notas||[]).forEach(x=>tipoCount[x.tipo]=(tipoCount[x.tipo]||0)+1);
+const tipoTop = Object.entries(tipoCount).sort((a,b)=>b[1]-a[1]);
+const topTipo = tipoTop[0] || ['—',0];
+
+/* BORRA CITA por fecha */
+const borraFecha={};
+(N.notas||[]).forEach(x=>{ if(x.borra_fecha) borraFecha[x.borra_fecha]=(borraFecha[x.borra_fecha]||0)+1; });
+const borraRows=Object.entries(borraFecha).map(([k,v])=>{
+  const [dd,mm,aaaa]=String(k).split('/');
+  return {k, label:`${dd}/${mm}`, value:v, ts:new Date(+aaaa,+mm-1,+dd).getTime(), raw:k};
+}).sort((a,b)=>a.ts-b.ts);
+
+/* Funcionarios que aparecen en varias pestanas */
+const funcNotas={};
+(N.notas||[]).forEach(x=>{ if(!x.es_sistema) funcNotas[x.funcionario]=(funcNotas[x.funcionario]||0)+1; });
+const funcBoletas={};
+Cnt.boletas.forEach(r=>{ if(!/^\./.test(r.usuario)) funcBoletas[r.usuario]=(funcBoletas[r.usuario]||0)+1; });
+const crossFunc = Object.keys(funcBoletas).map(u=>({
+  name:u, boletas:funcBoletas[u], notas:funcNotas[u]||0
+})).sort((a,b)=>b.boletas-a.boletas);
+const conCruce = crossFunc.filter(x=>x.notas>0);
+
+/* prevision: ingresos vs citas */
+const prevIngreso={}; Cnt.prev.forEach(r=>prevIngreso[r.prevision]=(prevIngreso[r.prevision]||0)+r.monto);
+const prevCitas={};   (A.citas_prevision||[]).filter(r=>String(r.prevision).toUpperCase()!=='TOTAL')
+                       .forEach(r=>prevCitas[r.prevision]=(prevCitas[r.prevision]||0)+r.cantidad);
+const crucePrev = Object.keys(prevIngreso).map(k=>({
+  k,
+  monto:prevIngreso[k],
+  citas:prevCitas[k]||0,
+  share: KP.ingresoDia? (prevIngreso[k]/KP.ingresoDia)*100 : 0
+})).sort((a,b)=>b.monto-a.monto);
+
+const notasTipoRows = tipoTop.map(([k,v])=>({label:k,value:v,share: N.notas.length? v/N.notas.length*100 : 0}));
+const accionRows   = (F.acciones||[]).map(r=>({label:r.accion,value:r.cantidad}))
+                   .sort((a,b)=>b.value-a.value);
+const rindRows     = (F.rendimiento||[]).slice().sort((a,b)=>b.citas-a.citas)
+                   .map(r=>({label:r.nombre,value:r.citas}));
+const boletaRows   = Cnt.boletas.slice().sort((a,b)=>(b.monto||0)-(a.monto||0))
+                   .map(r=>({label:r.usuario,value:r.monto,cantidad:r.cantidad}));
+const prevRows     = Cnt.prev.slice().sort((a,b)=>(b.monto||0)-(a.monto||0))
+                   .map(r=>({label:r.prevision,value:r.monto,cantidad:r.cantidad}));
+const citaPrevRows = (A.citas_prevision||[]).filter(r=>String(r.prevision).toUpperCase()!=='TOTAL')
+                   .sort((a,b)=>b.cantidad-a.cantidad)
+                   .map(r=>({label:r.prevision,value:r.cantidad}));
+const estadoRows   = (A.estado_hoy||[]).filter(r=>String(r.estado).toUpperCase()!=='TOTAL')
+                   .map(r=>({label:r.estado,value:r.cantidad}));
+
+const estadoDonut = (()=>{
+  const m=new Map();
+  (A.estado_hoy||[]).filter(r=>String(r.estado).toUpperCase()!=='TOTAL')
+   .forEach(r=>m.set(r.estado,(m.get(r.estado)||0)+r.cantidad));
+  return [...m].map(([label,value])=>({label,value}));
+})();
+const estadosRepetidos = (()=>{
+  const seen={};
+  (A.estado_hoy||[]).filter(r=>String(r.estado).toUpperCase()!=='TOTAL')
+   .forEach(r=>{ (seen[r.estado]=seen[r.estado]||[]).push(r.cantidad); });
+  return Object.entries(seen).filter(([,v])=>v.length>1);
+})();
+
+/* ==================================================================
+   4. Header / footer dinamicos
+   ================================================================== */
+(function(){
+  document.title = `INO Clinic · Control Diario ${FECHA_LOTE}`;
+  $('#h1-title').textContent = `Control Diario de Clínica · ${FECHA_LOTE}`;
+  $('#h1-sub').textContent =
+    `${(D.meta?.correos||0)} correos «Resumen Control» reenviados desde ${REMITENTE} — datos íntegros, sin muestreo`;
+  $('#chip-cuenta').lastChild.textContent =
+    `Cuenta corporativa · ${CUENTA_CORP}`;
+  $('#foot-dia').textContent  = FECHA_LOTE;
+  $('#foot-dia2').textContent = FECHA_LOTE_D2;
+  $('#prov-n').textContent = n0(D.meta?.correos||0);
+})();
+
+/* ==================================================================
+   5. Definicion de pestanas
+   ================================================================== */
+const TABS = [];
+const T = (id,label,build)=>TABS.push({id,label,build});
+
+/* ---------------- 1. CONTABLE ---------------- */
+T('contable','Contable',()=>{
+  const p=document.createElement('div');
+  p.appendChild(kpiGrid([
+    {label:'Ingreso del día',value:clpk(KP.ingresoDia),tone:'info',sub:`${FECHA_LOTE} · ${n0(KP.boletasDia)} boletas`,
+     desc:'Recaudación bruta del día, sumando los cuatro medios de pago (caja-tarjeta, caja-efectivo, Webpay y Totem).',
+     calc:`total declarado de la tabla «Ingresos por tipo pago» = ${clp(KP.ingresoDia)}`,
+     src:`Correo Resumen Control (Contable) ${FECHA_LOTE}`},
+    {label:'Ticket promedio',value:clp(KP.ticketProm),tone:'info',sub:'por boleta emitida',
+     desc:'Cuánto se factura en promedio por cada boleta emitida en el día. Mide el valor unitario de la atención.',
+     calc:`${clp(KP.ingresoDia)} ÷ ${n0(KP.boletasDia)} boletas = ${clp(KP.ticketProm)}`,
+     src:'Contable · cruza el total con «Boletas Emitidas por usuario»'},
+    {label:'Deuda acumulada',value:clpm(KP.deudaActual),tone:'bad',sub:`corte ${Cnt.deuda.length?Cnt.deuda[Cnt.deuda.length-1].mes:'—'}`,
+     desc:'Saldo adeudado histórico por pacientes. No es del día: se arrastra mes a mes.',
+     calc:`última fila de la tabla «Resumen Deuda» = ${clp(KP.deudaActual)}`,
+     src:'Contable · tabla «Resumen Deuda»'},
+    {label:'Variación deuda',value:pc(KP.deudaVar),tone:'bad',sub:Cnt.deuda.length?`${Cnt.deuda[0].mes} → ${Cnt.deuda[Cnt.deuda.length-1].mes}`:'—',
+     desc:'Cuánto creció el saldo de deuda en el período. Un valor positivo significa más pacientes deben.',
+     calc:`${clp(Cnt.deuda[Cnt.deuda.length-1]?.deuda)} ÷ ${clp(Cnt.deuda[0]?.deuda)} − 1 = ${pc(KP.deudaVar)}`,
+     src:'Contable · las filas de «Resumen Deuda»'},
+    {label:'Transacciones',value:n0(KP.boletasDia),sub:'boletas emitidas',
+     desc:'Número de boletas emitidas el día. Es el denominador del ticket promedio.',
+     calc:`fila TOTAL de «Boletas Emitidas por usuario» = ${n0(KP.boletasDia)}`,
+     src:'Contable'},
+    {label:'Ticket por acción clínica',value:clp(KP.ingresoAccion),tone:'info',sub:`${clpk(KP.ingresoDia)} ÷ ${n0(KP.acciones)} acciones`,
+     desc:'Ingreso que se genera por cada acción clínica registrada. Relaciona facturación con carga de trabajo.',
+     calc:`${clp(KP.ingresoDia)} ÷ ${n0(KP.acciones)} acciones = ${clp(KP.ingresoAccion)}`,
+     src:'CRUCE Contable × Funcionarios («Detalle de Acciones»)'},
+  ]));
+
+  const g=document.createElement('div'); g.className='grid2';
+  g.appendChild(chartCard('Ingresos por medio de pago',`Reparto de ${clp(KP.ingresoDia)} del día según canal de cobro`,
+    h=>donut(h,[
+      {label:'Caja · Tarjeta',value:KP.mixCajaTarjeta},
+      {label:'Caja · Efectivo',value:KP.mixEfectivo},
+      {label:'Webpay',value:KP.mixWebpay},
+      {label:'Totem',value:KP.mixTotem},
+    ],{fmt:clp,center:clpk(KP.ingresoDia),centerLabel:'INGRESO DÍA',
+       tip:r=>`<div class="t-row"><span class="t-k">Del total</span> <b>${pc(KP.ingresoDia?r.value/KP.ingresoDia*100:0)}</b></div>`}),
+    'Cada segmento se dimensiona por su monto en pesos.'));
+  g.appendChild(chartCard('Evolución de la deuda acumulada','Saldo adeudado por mes, según la tabla «Resumen Deuda»',
+    h=>lineChart(h,[{name:'Deuda acumulada',color:'#be123c',
+      data:Cnt.deuda.map((d,i)=>({label:d.mes,value:d.deuda,
+        note:i===0 ? 'Mes más antiguo de la serie: no tiene mes anterior con el cual comparar.'
+          : `Variación contra ${Cnt.deuda[i-1].mes}: ${pc((d.deuda/Cnt.deuda[i-1].deuda-1)*100)}`}))}],
+      {fmt:v=>'$'+(v/1e9).toFixed(2)+'MM'}),
+    'Cada punto es el saldo acumulado a fin de mes.'));
+  p.appendChild(g);
+
+  p.appendChild(Object.assign(document.createElement('div'),{className:'sec-title',textContent:'Tablas completas del correo · Contable'}));
+  const g2=document.createElement('div'); g2.className='grid2';
+
+  g2.appendChild(tableCard('Resumen Deuda','Saldo acumulado por mes',
+    {id:'c-deuda',file:'resumen_deuda',pageSize:10,
+     cols:[{t:'Mes',key:'mes'},{t:'Deuda',key:'deuda',num:true,fmt:(v)=>clp(v)}],
+     rows:Cnt.deuda.map(d=>[d.mes,clp(d.deuda)]),totalRow:true}));
+
+  g2.appendChild(tableCard('Ingresos por tipo de pago','Desglose del día por medio de cobro',
+    {id:'c-pago',file:'ingresos_tipo_pago',pageSize:10,
+     cols:[{t:'Tipo de pago',key:'tipo'},
+           {t:'Monto',key:'monto',num:true,fmt:(v)=>clp(v)},
+           {t:'% del total',key:'pct',num:true,fmt:(_,r)=>pc(KP.ingresoDia?parseNum(r[1])/KP.ingresoDia*100:0)}],
+     rows:Cnt.pagos.map(r=>[r.tipo,clp(r.monto)]).concat([['TOTAL',clp(KP.ingresoDia)]]),
+     totalRow:true}));
+
+  for(const [k,v] of Object.entries(Cnt.tarjetas)){
+    g2.appendChild(tableCard(k,'Cantidad de operaciones y monto por tipo de tarjeta',
+      {id:'c-tar-'+k.replace(/\W/g,''),file:'ingresos_tipo_tarjeta_'+k.replace(/\W/g,''),pageSize:10,
+       cols:[{t:'Tarjeta',key:'t'},
+             {t:'Cantidad',key:'c',num:true,fmt:n0},
+             {t:'Monto',key:'m',num:true,fmt:(x)=>clp(x)}],
+       rows:(v.rows||[]).map(r=>[r.tarjeta,n0(r.cantidad),clp(r.monto)]),
+       totalRow:true}));
+  }
+
+  g2.appendChild(tableCard('Ingresos por tipo de previsión','Las líneas de previsión con su transacción y monto',
+    {id:'c-prev',file:'ingresos_por_prevision',pageSize:25,
+     cols:[{t:'Previsión',key:'p'},
+           {t:'Cantidad',key:'c',num:true,fmt:n0},
+           {t:'Monto',key:'m',num:true,fmt:(x)=>clp(x)},
+           {t:'Ticket prom.',key:'t',num:true,fmt:(_,r)=>clp(parseNum(r[2])/(parseNum(r[1])||1))}],
+     rows:Cnt.prev.map(r=>[r.prevision,n0(r.cantidad),clp(r.monto)]).concat(
+           [[ 'TOTAL',n0(Cnt.prevTotal.cantidad),clp(Cnt.prevTotal.monto)]]),
+     totalRow:true,
+     tagCol:'p'}));
+
+  g2.appendChild(tableCard('Boletas emitidas por usuario','Los usuarios que emitieron boletas y su monto',
+    {id:'c-bol',file:'boletas_por_usuario',pageSize:25,
+     cols:[{t:'Usuario',key:'u'},
+           {t:'Cantidad',key:'c',num:true,fmt:n0},
+           {t:'Monto',key:'m',num:true,fmt:(x)=>clp(x)},
+           {t:'% ingreso',key:'s',num:true,fmt:(_,r)=>pc(KP.ingresoDia?parseNum(r[2])/KP.ingresoDia*100:0)}],
+     rows:Cnt.boletas.map(r=>[r.usuario,n0(r.cantidad),clp(r.monto)]).concat(
+           [[ 'TOTAL',n0(Cnt.bolTotal.cantidad),clp(Cnt.bolTotal.monto)]]),
+     totalRow:true}));
+
+  g2.appendChild(tableCard('Boletas anuladas por usuario','Sección que el sistema reportó sin registros',
+    {id:'c-anul',file:'boletas_anuladas',pageSize:10,
+     cols:[{t:'Usuario',key:'u'},{t:'Cantidad',key:'c',num:true,fmt:n0},{t:'Monto',key:'m',num:true,fmt:(x)=>clp(x)}],
+     rows:[['No hay datos para fecha seleccionada','','']]}));
+
+  p.appendChild(g2);
+  return p;
+});
+
+/* ---------------- 2. AGENDA ---------------- */
+T('agenda','Agenda',()=>{
+  const p=document.createElement('div');
+  p.appendChild(kpiGrid([
+    {label:'Citas hoy',value:n0(KP.citasHoy),sub:`incluye ${n0(KP.bloqueos)} bloqueos`,
+     desc:'Total de registros de la agenda del día. Incluye los bloques de horario, que no son pacientes reales.',
+     calc:`fila TOTAL de «Estado de citas hoy» = ${n0(KP.citasHoy)}`,
+     src:`Correo Resumen Control (Agenda) ${FECHA_LOTE}`},
+    {label:'Citas útiles',value:n0(KP.citasUtiles),tone:'good',sub:`${n0(KP.citasHoy)} − ${n0(KP.bloqueos)} bloqueos`,
+     desc:'Citas del día descontando los registros de tipo «Bloqueo», que solo reservan espacio en la agenda. Es la base real de atención.',
+     calc:`${n0(KP.citasHoy)} total − ${n0(KP.bloqueos)} «Bloqueo» = ${n0(KP.citasUtiles)}`,
+     src:'Agenda · «Estado de citas hoy»'},
+    {label:'Tasa de terminación',value:pc(KP.tasaTerm),tone:'warn',sub:`${n0(KP.terminadas)} de ${n0(KP.citasUtiles)} útiles`,
+     desc:'Porcentaje de las citas del día que quedaron en estado «Terminada». Mide si la jornada se ejecutó completa.',
+     calc:`${n0(KP.terminadas)} «Terminada» ÷ ${n0(KP.citasUtiles)} (total − bloqueos) = ${pc(KP.tasaTerm)}`,
+     src:'Agenda · cálculo propio sobre las filas de estado'},
+    {label:'Citas mañana',value:n0(KP.manana),tone:'info',sub:`agenda del ${FECHA_LOTE_D2}`,
+     desc:'Citas reservadas para el día siguiente según la tabla «N° Pacientes agendados para mañana».',
+     calc:`fila «Reservada» de «N° Pacientes agendados para mañana» = ${n0(KP.manana)}`,
+     src:`Correo Resumen Control (Agenda) ${FECHA_LOTE}`},
+    {label:'Proyección ingreso mañana',value:clpm(KP.proyeccion),tone:'info',sub:`${n0(KP.manana)} × ${clp(KP.ticketProm)}`,
+     desc:'Ingreso estimado para el día siguiente si cada cita reservada factura el mismo ticket promedio de hoy. Es una estimación propia: el correo no proyecta ingresos.',
+     calc:`${n0(KP.manana)} citas × ${clp(KP.ticketProm)} = ${clp(KP.proyeccion)}`,
+     src:'CRUCE Agenda × Contable (estimación propia, no está en los correos)'},
+    {label:'Suspendidas',value:n0(KP.suspendidas),tone:'warn',sub:`${pc(KP.citasUtiles?KP.suspendidas/KP.citasUtiles*100:0)} de las útiles`,
+     desc:'Citas suspendidas el día. Suele indicar pacientes que no llegaron o rechazos.',
+     calc:`fila «Suspendida» = ${n0(KP.suspendidas)}`,
+     src:'Agenda'},
+  ]));
+
+  const g=document.createElement('div'); g.className='grid2';
+  g.appendChild(chartCard('Estado de las citas de hoy',`Distribución de los ${n0(KP.citasHoy)} registros de agenda`,
+    h=>donut(h,estadoDonut,{fmt:n0,
+      center:n0(KP.citasHoy),centerLabel:'REGISTROS',
+      tip:r=>`<div class="t-row"><span class="t-k">Sobre el total</span> <b>${pc(KP.citasHoy?r.value/KP.citasHoy*100:0)}</b></div>
+             <div class="t-row"><span class="t-k">Sobre las ${n0(KP.citasUtiles)} sin bloqueo</span> <b>${pc(KP.citasUtiles?r.value/KP.citasUtiles*100:0)}</b></div>`}),
+    'Los bloqueos son cupos de agenda reservados, no pacientes. Las etiquetas repetidas se suman en el gráfico.'));
+  g.appendChild(chartCard('Top 15 previsiones con más citas','De la tabla «Citas por tipo previsión»',
+    h=>barH(h,citaPrevRows.slice(0,15),{fmt:n0,
+      tip:r=>{ const p0=prevIngreso[citaPrevRows.find(x=>x.label===r.label)?.label];
+        return `<div class="t-row"><span class="t-k">Citas por previsión</span> <b>${n0(r.value)}</b></div>`+
+               (p0?`<div class="t-row"><span class="t-k">Ingreso de esa previsión (día)</span> ${clp(p0)}</div>`:'');}}),
+    'Se puede cruzar con «Ingresos por tipo previsión» del tab Contable, pero la comparación es orientativa.'));
+  p.appendChild(g);
+
+  p.appendChild(Object.assign(document.createElement('div'),{className:'sec-title',textContent:'Tablas completas del correo · Agenda'}));
+  const g2=document.createElement('div'); g2.className='grid2';
+  g2.appendChild(tableCard('Estado de citas hoy','Las filas del correo, con etiquetas repetidas tal como llegaron',
+    {id:'a-estado',file:'agenda_estado_hoy',pageSize:12,
+     cols:[{t:'Estado',key:'e'},{t:'Cantidad',key:'c',num:true,fmt:n0},
+           {t:'% del total',key:'p',num:true,fmt:(_,r)=>pc(KP.citasHoy?parseNum(r[1])/KP.citasHoy*100:0)},
+           {t:'% sin bloqueo',key:'u',num:true,fmt:(_,r)=>pc(KP.citasUtiles?parseNum(r[1])/KP.citasUtiles*100:0)}],
+     rows:(A.estado_hoy||[]).map(r=>[r.estado,n0(r.cantidad)]),totalRow:true},
+    'Las filas duplicadas de estado se conservan tal cual para no perder el dato original.'));
+  g2.appendChild(tableCard('Pacientes agendados para mañana',`Resumen de la agenda del ${FECHA_LOTE_D2}`,
+    {id:'a-manana',file:'agenda_manana',pageSize:5,
+     cols:[{t:'Estado',key:'e'},{t:'Cantidad',key:'c',num:true,fmt:n0}],
+     rows:(A.manana||[]).map(r=>[r.estado,n0(r.cantidad)]),totalRow:true}));
+  g2.appendChild(tableCard('Citas por tipo previsión','Las líneas de previsión del correo',
+    {id:'a-prev',file:'agenda_citas_prevision',pageSize:25,
+     cols:[{t:'Previsión',key:'p'},{t:'Cantidad',key:'c',num:true,fmt:n0},
+           {t:'% del total',key:'s',num:true,fmt:(_,r)=>pc(KP.citasPrevMan?parseNum(r[1])/KP.citasPrevMan*100:0)},
+           {t:'Ingreso 23/09',key:'i',num:true,fmt:(_,r)=>clp(prevIngreso[r[0]]||0)}],
+     rows:(A.citas_prevision||[]).map(r=>[r.prevision,n0(r.cantidad)]),totalRow:true},
+    'Esta tabla puede sumar distinto que las citas del día: el correo no declara a qué fecha corresponde.'));
+  p.appendChild(g2);
+  return p;
+});
+
+/* ---------------- 3. BECAS / CONVENIOS ---------------- */
+T('becas','Becas y Convenios',()=>{
+  const p=document.createElement('div');
+  const dupl=(B.convenios||[]).reduce((a,r)=>{a[r.paciente]=(a[r.paciente]||0)+1;return a;},{});
+  const duplRows=Object.entries(dupl).filter(([,v])=>v>1);
+  const convLen=(B.convenios||[]).length||1;
+  const mesesOk = (B.meses||[]).slice(0,-1);
+  const convMesSinParcial = mesesOk.length
+    ? (B.mensual||[]).find(r=>String(r.tipo).toUpperCase()==='TODOS')?.valores.slice(0,-1).reduce((a,b)=>a+b,0)/mesesOk.length
+    : 0;
+  p.appendChild(kpiGrid([
+    {label:'Convenios aplicados',value:n0(KP.convenios),sub:FECHA_LOTE,
+     desc:'Descuentos por convenio registrados el día. Mide el uso de los acuerdos con instituciones y empresas.',
+     calc:`total declarado en el título de la tabla = ${n0(KP.convenios)}`,
+     src:`Correo Resumen Control (becas y convenios) ${FECHA_LOTE}`},
+    {label:'Monto descontado',value:clp(KP.convMonto),tone:'warn',sub:`día ${FECHA_LOTE}`,
+     desc:'Dinero que la clínica cedió en descuentos. Es costo directo de venta sobre la recaudación del día.',
+     calc:`fila «Total Descontado» = ${clp(KP.convMonto)}`,
+     src:'Becas · tabla «Reporte Convenios»'},
+    {label:'% del ingreso diario',value:pc(KP.convPct),tone:'warn',sub:`${clp(KP.convMonto)} ÷ ${clp(KP.ingresoDia)}`,
+     desc:'Qué proporción de la recaudación del día se perdió en descuentos. Cruzado entre dos correos.',
+     calc:`${clp(KP.convMonto)} descuentos ÷ ${clp(KP.ingresoDia)} ingreso = ${pc(KP.convPct)}`,
+     src:'CRUCE Becas × Contable'},
+    {label:'Descuento promedio',value:clp(KP.convMonto/convLen),sub:'por convenio aplicado',
+     desc:'Valor medio de cada descuento. Sirve para detectar outliers.',
+     calc:`${clp(KP.convMonto)} ÷ ${n0(KP.convenios)} descuentos = ${clp(KP.convMonto/convLen)}`,
+     src:'Becas'},
+    {label:'Becas del día',value:n0(KP.becas),tone:'good',sub:KP.becas?'registradas':'sin registros',
+     desc:'Cantidad de becas otorgadas. El reporte indica explícitamente si no hubo registros ese día.',
+     calc:`«Reporte Becas - Total: ${n0(KP.becas)}»`,
+     src:'Becas'},
+    {label:'Promedio mensual convenios',value:clpk(convMesSinParcial),
+     sub:`${mesesOk.length} meses completos`,
+     desc:'Gasto mensual promedio en descuentos de convenio, tomando los meses completos. El último mes se excluye si el corte es parcial.',
+     calc:`suma de los meses completos ÷ ${mesesOk.length} = ${clp(convMesSinParcial)}`,
+     src:'Becas · «Reporte Convenios Últimos 6 Meses»'},
+  ]));
+
+  const g=document.createElement('div'); g.className='grid2';
+  g.appendChild(chartCard('Descuentos por convenio','Evolución mensual del monto descontado',
+    h=>lineChart(h,[{name:'Monto descontado',color:'#b45309',
+      data:((B.mensual||[]).find(r=>String(r.tipo).toUpperCase()==='TODOS')?.valores||[]).map((v,i)=>({
+        label:(B.meses||[])[i]||'',value:v,
+        note:i===((B.meses||[]).length-1)?'<b style="color:#92400e">Mes parcial</b>: el corte es del día del reporte, por eso no es comparable con los meses completos.':''}))}],
+      {fmt:v=>'$'+(v/1e6).toFixed(1)+'M'}),
+    'El último mes del correo está recortado: no debe compararse con los meses completos.'));
+  g.appendChild(chartCard('Composición de descuentos por tipo','Reparto del gasto de descuentos entre categorías de convenio',
+    h=>donut(h,(B.mensual||[]).filter(r=>String(r.tipo).toUpperCase()!=='TODOS').map((r,i)=>({
+      label:r.tipo, value:(r.valores||[]).reduce((a,b)=>a+b,0), color:PAL[i%PAL.length]})),{fmt:clp,center:clpk(
+        (B.mensual||[]).filter(r=>String(r.tipo).toUpperCase()!=='TODOS').reduce((a,r)=>a+(r.valores||[]).reduce((x,y)=>x+y,0),0)
+      ),centerLabel:'ACUMULADO'}),
+    'Cada segmento es el total acumulado de esa categoría en la matriz de 6 meses.'));
+  p.appendChild(g);
+
+  if(duplRows.length){
+    p.appendChild(Object.assign(document.createElement('div'),{className:'sec-title',textContent:'Alerta de datos · descuentos repetidos el mismo día'}));
+    const box=document.createElement('div'); box.className='grid2';
+    duplRows.forEach(([pac,n])=>{
+      const rs=(B.convenios||[]).filter(r=>r.paciente===pac);
+      const tot=rs.reduce((a,r)=>a+r.monto,0);
+      const al=document.createElement('div');
+      al.className='alert a-warn';
+      al.innerHTML=`<div class="ic">!</div><div>
+        <h4>${esc(pac)} — ${n} descuentos el mismo día</h4>
+        <p>Fichas ${rs.map(r=>r.ficha).join(', ')} · montos ${rs.map(r=>clp(r.monto)).join(' + ')} = <b>${clp(tot)}</b> · todos bajo «${esc(rs[0].convenio)}» en ${esc(rs[0].unidad)}.</p>
+        <div class="tags">${rs.map(r=>`<span class="xref">${esc(r.funcionario)}</span>`).join('')}</div>
+      </div>`;
+      box.appendChild(al);
+    });
+    p.appendChild(box);
+  }
+
+  p.appendChild(Object.assign(document.createElement('div'),{className:'sec-title',textContent:'Tablas completas del correo · Becas y Convenios'}));
+  const g2=document.createElement('div'); g2.className='grid2';
+  g2.appendChild(tableCard('Reporte de becas','Tabla que el sistema reportó sin registros',
+    {id:'b-becas',file:'reporte_becas',pageSize:10,
+     cols:[{t:'Ficha',key:'f',num:true,fmt:n0},{t:'Paciente',key:'p'},{t:'Funcionario crea',key:'u'},
+           {t:'Fecha',key:'d'},{t:'Referido',key:'r'}],
+     rows:(B.becas||[]).length ? B.becas.map(r=>r) : [['—','No hay registros para la fecha seleccionada','','','']]}));
+  g2.appendChild(tableCard('Reporte de convenios del día',`Los ${n0(KP.convenios)} descuentos aplicados el ${FECHA_LOTE}, con sus filtros`,
+    {id:'b-conv',file:'reporte_convenios_dia',pageSize:25,
+     cols:[{t:'Ficha',key:'f',num:true,fmt:n0},{t:'Paciente',key:'p',cls:'note'},
+           {t:'Monto',key:'m',num:true,fmt:(v)=>clp(v)},
+           {t:'Convenio',key:'c'},{t:'Unidad',key:'u'},{t:'Funcionario',key:'f2'},
+           {t:'Fecha',key:'d'},{t:'Referido',key:'r'}],
+     rows:(B.convenios||[]).map(r=>[n0(r.ficha),r.paciente,clp(r.monto),r.convenio,r.unidad,r.funcionario,r.fecha,r.referido]),
+     totalRow:true}));
+  g2.appendChild(tableCard('Convenios · últimos 6 meses','Matriz de montos por categoría y mes',
+    {id:'b-mensual',file:'convenios_6_meses',pageSize:10,
+     cols:[{t:'Tipo de convenio',key:'t'}].concat((B.meses||[]).map(m=>({t:m,key:m,num:true,fmt:(v)=>clp(v)}))),
+     rows:(B.mensual||[]).map(r=>[r.tipo].concat((r.valores||[]).map(v=>clp(v)))),
+     totalRow:true},
+    `La última columna del correo (<b>${esc((B.meses||[]).slice(-1)[0]||'—')}</b>) es un mes parcial: el reporte se generó el ${FECHA_LOTE}. No debe compararse con los meses completos.`));
+  p.appendChild(g2);
+  return p;
+});
+
+/* ---------------- 4. PROCESOS ---------------- */
+T('procesos','Procesos Auto',()=>{
+  const p=document.createElement('div');
+  const recs=(P.procesos||[]).filter(r=>/Recordatorio/.test(r.proceso));
+  const horas=(P.procesos||[]).map(r=>r.hora).sort();
+  const hIni=horas[0]||'—', hFin=horas[horas.length-1]||'—';
+  const durSeg=(()=>{
+    if(!horas.length) return 0;
+    const [a,b,c]=horas[0].split(':').map(Number);
+    const [d,e,f]=horas[horas.length-1].split(':').map(Number);
+    return (d-a)*3600+(e-b)*60+(f-c);
+  })();
+  p.appendChild(kpiGrid([
+    {label:'Automatizaciones ejecutadas',value:n0(KP.procesos),tone:'info',sub:`ventana ${hIni} – ${hFin}`,
+     desc:'Total de acciones que el sistema ejecutó solo en la madrugada. Mide el volumen de trabajo no humano.',
+     calc:`suma de la columna «Cantidad» de las ${n0((P.procesos||[]).length)} filas del reporte = ${n0(KP.procesos)}`,
+     src:`Correo Resumen Procesos ${FECHA_LOTE_D2}`},
+    {label:'Recordatorios enviados',value:n0(KP.recordatorios),sub:'anticipaciones configuradas',
+     desc:'Correos o mensajes automáticos de recordatorio de cita. Es la principal palanca contra el no-show.',
+     calc:`suma de los procesos «Recordatorio» = ${n0(KP.recordatorios)}`,
+     src:'Procesos · filas cuyo proceso empieza con «Recordatorio»'},
+    {label:'Procesos sin operación',value:n0((P.procesos||[]).filter(r=>r.cantidad===0).length),tone:'good',sub:`de ${n0((P.procesos||[]).length)} filas`,
+     desc:'Procesos configurados que no tuvieron ejecución porque no había trabajo pendiente. No es una falla.',
+     calc:`filas con Cantidad = 0 = ${n0((P.procesos||[]).filter(r=>r.cantidad===0).length)}`,
+     src:'Procesos'},
+    {label:'Duración de la ventana',value:`${n0(durSeg)} s`,sub:`de ${hIni} a ${hFin}`,
+     desc:'Tiempo total que la clínica estuvo en proceso automático, o sea sin intervención humana.',
+     calc:`hora final ${hFin} − hora inicial ${hIni} = ${n0(durSeg)} segundos`,
+     src:'Procesos · columna «Hora»'},
+    {label:'Injustificados marcados',value:n0(((P.procesos||[]).find(r=>/Injustificados/.test(r.proceso))||{}).cantidad||0),tone:'warn',sub:'asistencia',
+     desc:'Registros de inasistencia marcados automáticamente. Alimenta el cálculo de inasistencia y la facturación.',
+     calc:`fila «Actualiza Injustificados» = ${n0(((P.procesos||[]).find(r=>/Injustificados/.test(r.proceso))||{}).cantidad||0)}`,
+     src:'Procesos · CRUCE con Notas'},
+    {label:'No-shows (notas)',value:n0(KP.noShow),tone:'bad',sub:`${pc(KP.noShowPct)} de las citas sin bloqueo`,
+     desc:'Avisos automáticos de atraso registrados en notas. Cruzado contra las citas sin bloqueo del día.',
+     calc:`${n0(KP.noShow)} notas «Paciente atrasado» ÷ ${n0(KP.citasUtiles)} citas sin bloqueo = ${pc(KP.noShowPct)}`,
+     src:'CRUCE Procesos × Notas × Agenda'},
+  ]));
+
+  const g=document.createElement('div'); g.className='grid2';
+  g.appendChild(chartCard('Volumen por proceso','Cuántas unidades procesó cada tarea automática',
+    h=>barsV(h,(P.procesos||[]).map(r=>({label:r.hora,value:r.cantidad,proceso:r.proceso,raw:r})),{
+      fmt:n0, tip:r=>`<div class="t-row"><span class="t-k">Proceso</span> ${esc(r.proceso)}</div>
+        <div class="t-row"><span class="t-k">Cantidad</span> <b>${n0(r.value)}</b></div>
+        <div class="t-row"><span class="t-k">Hora</span> ${esc(r.label)}</div>`}),
+    'El eje X muestra la hora de ejecución. Al hacer hover cada barra muestra el nombre completo del proceso.'));
+  g.appendChild(chartCard('Recordatorios de cita por anticipación','Distribución de los recordatorios enviados',
+    h=>barH(h,recs.map(r=>({label:r.proceso.replace('Recordatorio de cita','').replace('dia(s)','días').trim(),value:r.cantidad})),
+      {fmt:n0, labelW:110,
+       tip:r=>`<div class="t-row"><span class="t-k">Recordatorios</span> <b>${n0(r.value)}</b></div>
+        <div class="t-row"><span class="t-k">De los ${n0(KP.recordatorios)} recordatorios</span> <b>${pc(KP.recordatorios?r.value/KP.recordatorios*100:0)}</b></div>
+        <div class="t-row"><span class="t-k">Del total de automatizaciones</span> <b>${pc(KP.procesos?r.value/KP.procesos*100:0)}</b></div>`}),
+    'El recordatorio a 1 día concentra la mayor parte de los envíos: es la ventana más eficaz para confirmar citas.'));
+  p.appendChild(g);
+
+  p.appendChild(Object.assign(document.createElement('div'),{className:'sec-title',textContent:'Tabla completa del correo · Procesos'}));
+  const g2=document.createElement('div'); g2.className='grid2';
+  g2.appendChild(tableCard('Procesos automáticos ejecutados',`Las ${n0((P.procesos||[]).length)} filas del reporte de la madrugada del ${FECHA_LOTE_D2}`,
+    {id:'p-proc',file:'procesos_automaticos',pageSize:15,
+     cols:[{t:'Fecha',key:'f'},{t:'Hora',key:'h'},{t:'Proceso',key:'p',cls:'note'},
+           {t:'Cantidad',key:'c',num:true,fmt:n0},
+           {t:'% del total',key:'s',num:true,fmt:(_,r)=>pc(KP.procesos?parseNum(r[3])/KP.procesos*100:0)}],
+     rows:(P.procesos||[]).map(r=>[r.fecha,r.hora,r.proceso,n0(r.cantidad)]),
+     totalRow:true},
+    'Si el correo no incluye fila TOTAL, el total mostrado es la suma calculada de las filas.'));
+  p.appendChild(g2);
+  return p;
+});
+
+/* ---------------- 5. FUNCIONARIOS ---------------- */
+T('funcionarios','Funcionarios',()=>{
+  const p=document.createElement('div');
+  p.appendChild(kpiGrid([
+    {label:'Asistentes con citas',value:n0(KP.asistentes),tone:'info',sub:`${n0(KP.citasAsist)} citas asignadas`,
+     desc:'Cuántos asistentes registraron producción de citas el día. Mide el tamaño de la planta de asistentes.',
+     calc:`${n0((F.rendimiento||[]).length)} filas de «Rendimiento Asistentes (Citas)»`,
+     src:`Correo Resumen Control (Funcionarios) ${FECHA_LOTE}`},
+    {label:'Citas por asistente',value:n1(KP.citasAsistProm),sub:'promedio diario',
+     desc:'Carga de citas promedio por asistente. Si está muy por debajo del máximo, hay asimetría de carga.',
+     calc:`${n0(KP.citasAsist)} citas ÷ ${n0(KP.asistentes)} asistentes = ${n1(KP.citasAsistProm)} citas por asistente`,
+     src:'Funcionarios · cálculo propio'},
+    {label:'Informes impresos',value:n0(KP.informes),sub:`${n0((F.informes||[]).length)} doctores`,
+     desc:'Informes clínicos que los doctores hicieron imprimir. Indicador de actividad de documentación clínica.',
+     calc:`suma de los subtotales de la tabla = ${n0(KP.informes)}`,
+     src:'Funcionarios · «Informes Impresos por Doctor»'},
+    {label:'Productos registrados',value:n0(KP.productos),sub:`${n0((F.productos||[]).length)} doctores`,
+     desc:'Uso de insumos o materiales por doctor. Sirve para control de inventario y de uso clínico.',
+     calc:`suma de los subtotales de la tabla = ${n0(KP.productos)}`,
+     src:'Funcionarios · «Productos usados por Doctor»'},
+    {label:'Acciones clínicas',value:n0(KP.acciones),tone:'info',sub:`${n0(KP.tiposAccion)} tipos distintos`,
+     desc:'Total de procedimientos registrados en ficha el día. Es la medida real de trabajo clínico realizado.',
+     calc:`suma de la columna «Cantidad» de «Detalle de Acciones» = ${n0(KP.acciones)}`,
+     src:'Funcionarios · «Detalle de Acciones»'},
+    {label:'Ingreso por acción',value:clp(KP.ingresoAccion),tone:'info',sub:`${clpk(KP.ingresoDia)} ÷ ${n0(KP.acciones)}`,
+     desc:'Cuánto recibe la clínica por cada acción clínica registrada. Cruzado entre dos correos distintos.',
+     calc:`${clp(KP.ingresoDia)} ÷ ${n0(KP.acciones)} acciones = ${clp(KP.ingresoAccion)}`,
+     src:'CRUCE Funcionarios × Contable'},
+  ]));
+
+  const g=document.createElement('div'); g.className='grid2';
+  g.appendChild(chartCard('Top 20 asistentes por citas','Ranking de producción de agenda por asistente',
+    h=>barH(h,rindRows.slice(0,20),{fmt:n0, labelW:170,
+      tip:r=>`<div class="t-row"><span class="t-k">Citas</span> <b>${n0(r.value)}</b></div>
+        <div class="t-row"><span class="t-k">Del total diario</span> <b>${pc(KP.citasAsist?r.value/KP.citasAsist*100:0)}</b></div>
+        <div class="t-row"><span class="t-k">Veces el promedio (${n1(KP.citasAsistProm)})</span> <b>${n1(KP.citasAsistProm?r.value/KP.citasAsistProm:0)}×</b></div>`}),
+    'Una barra muy por encima del promedio indica concentración de carga en pocas personas.'));
+  g.appendChild(chartCard('Top 20 acciones clínicas','Procedimientos más frecuentes del día',
+    h=>barH(h,accionRows.slice(0,20),{fmt:n0, labelW:230,
+      tip:r=>`<div class="t-row"><span class="t-k">Veces registrada</span> <b>${n0(r.value)}</b></div>
+        <div class="t-row"><span class="t-k">Del total de acciones</span> <b>${pc(KP.acciones?r.value/KP.acciones*100:0)}</b></div>`}),
+    'Algunas acciones dominan el registro porque son las más automatizadas de la ficha, no necesariamente las más frecuentes en la práctica clínica.'));
+  p.appendChild(g);
+
+  p.appendChild(Object.assign(document.createElement('div'),{className:'sec-title',textContent:'Tablas completas del correo · Funcionarios'}));
+  const g2=document.createElement('div'); g2.className='grid2';
+  g2.appendChild(tableCard('Rendimiento de asistentes',`Los ${n0(KP.asistentes)} asistentes y sus citas del día`,
+    {id:'f-rind',file:'rendimiento_asistentes',pageSize:25,
+     cols:[{t:'Asistente',key:'n'},{t:'Citas',key:'c',num:true,fmt:n0},
+           {t:'% del total',key:'p',num:true,fmt:(_,r)=>pc(KP.citasAsist?parseNum(r[1])/KP.citasAsist*100:0)},
+           {t:'vs. promedio',key:'v',num:true,fmt:(_,r)=>{const d=parseNum(r[1])-KP.citasAsistProm;
+             return (d>=0?'+':'')+n1(d);}}],
+     rows:(F.rendimiento||[]).map(r=>[r.nombre,n0(r.citas)]).concat([['TOTAL',n0(KP.citasAsist)]]),
+     totalRow:true}));
+
+  g2.appendChild(pairsTable('f-inf','Informes impresos por doctor','Informes agrupados por doctor, con su asistente asignado',
+    F.informes||[],'firma'));
+  g2.appendChild(pairsTable('f-prod','Productos usados por doctor','Usos de producto agrupados por doctor',
+    F.productos||[],'firma'));
+  g2.appendChild(tableCard('Detalle de acciones clínicas',`Los ${n0(KP.tiposAccion)} tipos de acción y su cantidad`,
+    {id:'f-acc',file:'detalle_acciones',pageSize:25,
+     cols:[{t:'Acción',key:'a',cls:'note'},{t:'Cantidad',key:'c',num:true,fmt:n0},
+           {t:'% del total',key:'p',num:true,fmt:(_,r)=>pc(KP.acciones?parseNum(r[1])/KP.acciones*100:0)}],
+     rows:(F.acciones||[]).map(r=>[r.accion,n0(r.cantidad)]).concat([['TOTAL',n0(KP.acciones)]]),
+     totalRow:true}));
+  p.appendChild(g2);
+  return p;
+});
+
+function pairsTable(id,title,sub,blocks,file){
+  const rows=[];
+  blocks.forEach(b=>{
+    (b.registros||[]).forEach(r=>rows.push([b.doctor,r.asistente,n0(r.cantidad)]));
+    rows.push([b.doctor,'— subtotal del doctor —',n0(b.subtotal_calculado)]);
+  });
+  return tableCard(title,sub,{id,file,pageSize:25,
+    cols:[{t:'Doctor',key:'d'},{t:'Asistente',key:'a'},{t:'Cantidad',key:'c',num:true,fmt:n0}],
+    rows,totalRow:false});
+}
+
+/* ---------------- 6. NOTAS ---------------- */
+T('notas','Notas',()=>{
+  const p=document.createElement('div');
+  const admin=(N.notas||[]).filter(x=>x.tabla==='administrativas');
+  const docs=(N.notas||[]).filter(x=>x.tabla==='doctores');
+  p.appendChild(kpiGrid([
+    {label:'Notas registradas',value:n0(KP.totalNotas),tone:'info',sub:`${n0(KP.notasAdmin)} admin + ${n0(KP.notasDoc)} doctores`,
+     desc:'Total de notas en ficha el día. Mide la carga documental del día.',
+     calc:`${n0(KP.notasAdmin)} «Notas Administrativas» + ${n0(KP.notasDoc)} «Notas Doctores» = ${n0(KP.totalNotas)}`,
+     src:`Correo Resumen Control (Notas) ${FECHA_LOTE} — leído íntegro`},
+    {label:'Anotadas por el sistema',value:pc(KP.sistemaPct),tone:'good',sub:`${n0(KP.sistemaNotas)} de ${n0(KP.notasAdmin)} admin`,
+     desc:'Proporción de notas administrativas generadas automáticamente. Alto valor significa menos carga manual.',
+     calc:`${n0(KP.sistemaNotas)} notas con funcionario «. SISTEMA» ÷ ${n0(KP.notasAdmin)} notas administrativas = ${pc(KP.sistemaPct)}`,
+     src:'Notas · clasificación por la columna «Funcionario»'},
+    {label:'Borra cita',value:n0(KP.borraCita),tone:'bad',sub:`${pc(KP.borraPct)} de las admin`,
+     desc:'Citas eliminadas de la agenda. Es la acción correctiva más masiva: impacta directo en facturación y en huecos de agenda.',
+     calc:`${n0(KP.borraCita)} notas clasificadas como «Borra cita» ÷ ${n0(KP.notasAdmin)} notas administrativas = ${pc(KP.borraPct)}`,
+     src:'Notas · CRUCE con Agenda'},
+    {label:'Pacientes atrasados',value:n0(KP.noShow),tone:'bad',sub:`${pc(KP.noShowPct)} de las citas sin bloqueo`,
+     desc:'Avisos automáticos de atraso. Mide inasistencia real contra la agenda ejecutada.',
+     calc:`${n0(KP.noShow)} notas «Paciente atrasado» ÷ ${n0(KP.citasUtiles)} citas sin bloqueo = ${pc(KP.noShowPct)}`,
+     src:'CRUCE Notas × Agenda'},
+    {label:'Notas por cita terminada',value:n1(KP.notasCita),tone:'info',sub:`${n0(KP.totalNotas)} ÷ ${n0(KP.terminadas)}`,
+     desc:'Cuántas entradas de ficha genera cada cita atendida. Mide la profundidad de documentación por atención.',
+     calc:`${n0(KP.totalNotas)} notas ÷ ${n0(KP.terminadas)} citas terminadas = ${n1(KP.notasCita)} notas por cita`,
+     src:'CRUCE Notas × Agenda'},
+    {label:'Nota más frecuente',value:n0(topTipo[1]),sub:String(topTipo[0]).toLowerCase(),
+     desc:'Categoría que más se repite. Sirve para encontrar el principal vector de fricción operativa.',
+     calc:`agrupación de las ${n0(KP.totalNotas)} notas por tipo de contenido`,
+     src:'Notas'},
+  ]));
+
+  const g=document.createElement('div'); g.className='grid2';
+  g.appendChild(chartCard('Notas por tipo de contenido',`Distribución de las ${n0(KP.totalNotas)} notas del día`,
+    h=>barH(h,notasTipoRows.map(r=>({label:r.label,value:r.value,share:r.share})),{fmt:n0, labelW:170,
+      tip:r=>`<div class="t-row"><span class="t-k">Notas</span> <b>${n0(r.value)}</b></div>
+        <div class="t-row"><span class="t-k">Del total</span> <b>${pc(r.share)}</b></div>`}),
+    'Las categorías más frecuentes concentran el problema operativo del día.'));
+  g.appendChild(chartCard('Citas eliminadas por fecha','A qué día apuntan las notas «BORRA CITA» con fecha legible',
+    h=>barH(h,borraRows.map(r=>({label:r.label,value:r.value,raw:r.raw})),{fmt:n0, labelW:60, rowH:19,
+      tip:r=>`<div class="t-row"><span class="t-k">Fecha de la cita borrada</span> <b>${esc(r.raw)}</b></div>
+        <div class="t-row"><span class="t-k">Citas eliminadas</span> <b>${n0(r.value)}</b></div>
+        <div class="t-row"><span class="t-k">Sobre las ${n0(KP.borraCita)} BORRA CITA</span> <b>${pc(KP.borraFechaTotal?r.value/KP.borraFechaTotal*100:0)}</b></div>`}),
+    `De las ${n0(KP.borraCita)} notas «Borra cita», ${n0(KP.borraFechaTotal)} tienen el formato «BORRA CITA: dd/mm/aaaa hh:mm (sala)» y por eso se pueden agrupar por fecha.`));
+  p.appendChild(g);
+
+  p.appendChild(Object.assign(document.createElement('div'),{className:'sec-title',textContent:`Tablas completas del correo · Notas (${n0(KP.totalNotas)} registros, búsqueda y exportación)`}));
+
+  const cols=[{t:'Funcionario',key:'f'},{t:'Ficha',key:'i',num:true,fmt:n0},
+              {t:'Tipo',key:'t',tag:r=>{
+                 if(r[2]==='Borra cita') return 't-borra';
+                 if(r[2]==='Paciente atrasado') return 't-atraso';
+                 if(r[2]==='Promo / campana') return 't-promo';
+                 if(String(r[0]).toUpperCase().includes('SISTEMA')) return 't-sistema';
+                 return '';}},
+              {t:'Nota',key:'n',cls:'note'}];
+
+  p.appendChild(tableCard('Notas Administrativas (funcionarios)',`Las ${n0(KP.notasAdmin)} notas de los asistentes. Busque por ficha, funcionario o texto.`,
+    {id:'n-admin',file:'notas_administrativas',pageSize:50,height:'620px',
+     cols, rows:admin.map(x=>[x.funcionario,n0(x.ficha),x.tipo,x.nota]),
+     searchable:r=>r.join(' ').toLowerCase()}));
+
+  p.appendChild(tableCard('Notas Doctores',`Las ${n0(KP.notasDoc)} notas clínicas de los profesionales.`,
+    {id:'n-doc',file:'notas_doctores',pageSize:50,height:'620px',
+     cols, rows:docs.map(x=>[x.funcionario,n0(x.ficha),x.tipo,x.nota]),
+     searchable:r=>r.join(' ').toLowerCase()}));
+
+  return p;
+});
+
+/* ---------------- 7. DASHBOARD ---------------- */
+T('dashboard','Dashboard KPI',()=>{
+  const p=document.createElement('div');
+
+  p.appendChild(Object.assign(document.createElement('div'),{className:'sec-title',textContent:'Indicadores financieros · tab Contable'}));
+  p.appendChild(kpiGrid([
+    {label:'Ingreso del día',value:clpk(KP.ingresoDia),tone:'info',sub:FECHA_LOTE,
+     desc:'Recaudación total del día según los cuatro medios de pago.',
+     calc:`total declarado de «Ingresos por tipo pago» = ${clp(KP.ingresoDia)}`,
+     src:'Contable'},
+    {label:'Ticket promedio',value:clp(KP.ticketProm),sub:'por boleta',
+     desc:'Valor medio facturado por boleta del día.',
+     calc:`${clp(KP.ingresoDia)} ÷ ${n0(KP.boletasDia)} boletas = ${clp(KP.ticketProm)}`,
+     src:'Contable'},
+    {label:'Deuda acumulada',value:clpm(KP.deudaActual),tone:'bad',sub:`corte ${Cnt.deuda.length?Cnt.deuda[Cnt.deuda.length-1].mes:'—'}`,
+     desc:'Saldo histórico adeudado por pacientes.',
+     calc:`última fila de «Resumen Deuda» = ${clp(KP.deudaActual)}`,
+     src:'Contable'},
+    {label:'Días de ingreso para cubrir deuda',value:n1(KP.diasDeuda),tone:'bad',sub:'deuda ÷ ingreso día',
+     desc:'Cuántos días de recaudación actual se necesitarían para saldar la deuda acumulada. Mide el tamaño del pasivo frente a la capacidad de cobro diaria.',
+     calc:`${clp(KP.deudaActual)} ÷ ${clp(KP.ingresoDia)} = ${n1(KP.diasDeuda)} días`,
+     src:'CRUCE Contable (derivación propia)'},
+    {label:'Concentración top 5 usuarios',value:pc(KP.conc5),tone:'warn',sub:`5 de ${n0(Cnt.boletas.length)} usuarios`,
+     desc:'Qué parte del ingreso depende de los cinco mayores emisores de boletas. Alto = riesgo de concentración.',
+     calc:`${clp(KP.top5Boletas)} de los 5 mayores ÷ ${clp(KP.ingresoDia)} = ${pc(KP.conc5)}`,
+     src:'CRUCE Contable (derivación propia)'},
+    {label:'Descuentos como % del ingreso',value:pc(KP.convPct),tone:'warn',sub:'becas y convenios',
+     desc:'Costo de los descuentos de convenio respecto de la recaudación del día.',
+     calc:`${clp(KP.convMonto)} ÷ ${clp(KP.ingresoDia)} = ${pc(KP.convPct)}`,
+     src:'CRUCE Becas × Contable'},
+  ]));
+
+  p.appendChild(Object.assign(document.createElement('div'),{className:'sec-title',textContent:'Indicadores de operación · tab Agenda'}));
+  p.appendChild(kpiGrid([
+    {label:'Citas del día sin bloqueo',value:n0(KP.citasUtiles),tone:'good',sub:`${n0(KP.citasHoy)} − ${n0(KP.bloqueos)} bloqueos`,
+     desc:'Citas del día una vez descontados los registros de tipo «Bloqueo».',
+     calc:`${n0(KP.citasHoy)} − ${n0(KP.bloqueos)} = ${n0(KP.citasUtiles)}`,
+     src:'CRUCE Agenda (derivación propia)'},
+    {label:'Tasa de terminación',value:pc(KP.tasaTerm),tone:'warn',sub:'sobre las citas sin bloqueo',
+     desc:'Porcentaje de las citas del día sin bloqueo que quedaron «Terminada». Mide si la jornada se cerró completa.',
+     calc:`${n0(KP.terminadas)} ÷ ${n0(KP.citasUtiles)} = ${pc(KP.tasaTerm)}`,
+     src:'CRUCE Agenda (derivación propia)'},
+    {label:'Inasistencia estimada',value:pc(KP.noShowPct),tone:'bad',sub:`${n0(KP.noShow)} pacientes atrasados`,
+     desc:'Proporción de las citas útiles con aviso automático de atraso.',
+     calc:`${n0(KP.noShow)} ÷ ${n0(KP.citasUtiles)} = ${pc(KP.noShowPct)}`,
+     src:'CRUCE Notas × Agenda'},
+    {label:'Proyección de facturación mañana',value:clpm(KP.proyeccion),tone:'info',sub:`${n0(KP.manana)} citas × ticket`,
+     desc:'Ingreso estimado para el día siguiente suponiendo que todas las citas reservadas se atienden y facturan como el promedio de hoy. Es una estimación propia, no una cifra del correo.',
+     calc:`${n0(KP.manana)} × ${clp(KP.ticketProm)} = ${clp(KP.proyeccion)}`,
+     src:'CRUCE Agenda × Contable (estimación)'},
+  ]));
+
+  p.appendChild(Object.assign(document.createElement('div'),{className:'sec-title',textContent:'Cruces entre pestañas'}));
+  const cross=document.createElement('div'); cross.className='grid2';
+
+  cross.appendChild(chartCard('Ingreso vs. carga clínica','Relación entre la facturación del día y el trabajo clínico registrado',
+    h=>{
+      const c1=document.createElement('div');
+      c1.innerHTML=`<div style="display:grid;gap:9px">
+        ${[['Ingreso del día (Contable)',clpk(KP.ingresoDia),'#0e7490'],
+           ['Acciones clínicas (Funcionarios)',n0(KP.acciones),'#4f46e5'],
+           ['Citas terminadas (Agenda)',n0(KP.terminadas),'#be185d'],
+           ['Notas de ficha (Notas)',n0(KP.totalNotas),'#047857']].map(([k,v,col])=>
+          `<div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center">
+             <div><div style="font-size:12px;color:#405473">${k}</div>
+             <div style="height:8px;border-radius:4px;background:#e4eaf2;margin-top:4px;overflow:hidden">
+               <div style="height:100%;width:100%;background:${col};border-radius:4px"></div></div></div>
+             <div class="num" style="font-size:16px;font-weight:800">${v}</div>
+           </div>`).join('')}
+        <div style="margin-top:6px;padding-top:11px;border-top:1px dashed #b9c7db;display:grid;gap:7px">
+          ${[['$ por acción clínica',clp(KP.ingresoAccion)],
+             ['$ por cita terminada',clp(KP.ingresoCita)],
+             ['Notas por cita terminada',n1(KP.notasCita)],
+             ['Citas por asistente',n1(KP.citasAsistProm)]].map(([k,v])=>
+            `<div style="display:flex;justify-content:space-between;font-size:12.5px">
+               <span style="color:#405473">${k}</span><b class="num">${v}</b></div>`).join('')}
+        </div></div>`;
+      h.appendChild(c1);
+    },
+    'Los ratios de abajo son los que cruzan pestañas: por acción clínica, por cita terminada y por cita atendida.'));
+
+  cross.appendChild(chartCard('Previsión: ingreso del día vs. citas de mañana','Qué previsiones concentran facturación y cuáles llenan agenda',
+    h=>{
+      const rows=crucePrev.slice(0,14);
+      const c=document.createElement('div');
+      c.innerHTML=`<div style="font-size:11px;color:#5a6b85;margin-bottom:8px;display:flex;gap:14px">
+        <span><i style="display:inline-block;width:10px;height:10px;background:#22d3ee;border-radius:3px"></i> Ingreso</span>
+        <span><i style="display:inline-block;width:10px;height:10px;background:#f472b6;border-radius:3px"></i> Citas</span></div>`;
+      const max=Math.max(...rows.map(r=>r.monto),1);
+      const maxC=Math.max(...rows.map(r=>r.citas),1);
+      rows.forEach(r=>{
+        const d=document.createElement('div');
+        d.style.cssText='display:grid;grid-template-columns:150px 1fr;gap:9px;align-items:center;margin-bottom:7px;font-size:11.5px';
+        d.innerHTML=`<div style="color:#405473;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.k)}">${esc(r.k)}</div>
+          <div style="display:grid;gap:2px">
+            <div style="height:7px;border-radius:4px;background:#e4eaf2"><div style="height:100%;width:${r.monto/max*100}%;background:#22d3ee;border-radius:4px"></div></div>
+            <div style="height:5px;border-radius:3px;background:#e4eaf2"><div style="height:100%;width:${r.citas/maxC*100}%;background:#f472b6;border-radius:3px"></div></div>
+          </div>`;
+        d.addEventListener('mouseenter',e=>tipShow(
+          `<b class="t-h">${esc(r.k)}</b>
+           <div class="t-row"><span class="t-k">Ingreso del día</span> <b>${clp(r.monto)}</b> (${pc(r.share)})</div>
+           <div class="t-row"><span class="t-k">Citas por previsión</span> <b>${n0(r.citas)}</b></div>
+           <div class="t-row"><span class="t-k">Ingreso medio por cita</span> <b>${clp(r.citas?r.monto/r.citas:0)}</b></div>`,e));
+        d.addEventListener('mousemove',tipMove);
+        d.addEventListener('mouseleave',tipHide);
+        c.appendChild(d);
+      });
+      h.appendChild(c);
+    },
+    'Cada fila muestra dos barras: la cian es la facturación de esa previsión el día del reporte y la rosa cuántas citas registra la tabla de previsión.'));
+
+  cross.appendChild(chartCard('El embudo del día','De la agenda ejecutada al ingreso cobrado',
+    h=>{
+      const c=document.createElement('div');
+      const steps=[['Citas en agenda',KP.citasHoy,'#5a6b85',`Incluye ${n0(KP.bloqueos)} bloques`],
+                   ['Citas sin bloqueo',KP.citasUtiles,'#1d4ed8',`${n0(KP.citasHoy)} − ${n0(KP.bloqueos)} bloqueos`],
+                   ['Citas terminadas',KP.terminadas,'#0e7490',`${pc(KP.tasaTerm)} de las citas sin bloqueo`],
+                   ['Boletas emitidas',KP.boletasDia,'#047857',`${n0(KP.boletasDia)} documentos`],
+                   ['Ingreso del día',clpk(KP.ingresoDia),'#be185d',clp(KP.ingresoDia)]];
+      c.innerHTML=steps.map(([k,v,col,sub],i)=>`
+        <div style="display:grid;grid-template-columns:26px 1fr auto;gap:11px;align-items:center;padding:9px 0;${i?'border-top:1px dashed #22304d':''}">
+          <div style="width:26px;height:26px;border-radius:8px;background:${col}22;color:${col};display:grid;place-items:center;font-weight:800;font-size:12px">${i+1}</div>
+          <div><div style="font-size:13px;font-weight:600">${k}</div><div style="font-size:11px;color:#5a6b85">${sub}</div></div>
+          <div class="num" style="font-size:17px;font-weight:800;color:${col}">${v}</div>
+        </div>`).join('');
+      h.appendChild(c);
+    },
+    `Embudo de conversión operativa: parte de los registros de agenda y llega al dinero efectivamente cobrado. El ticket promedio del día es ${clp(KP.ticketProm)}.`));
+
+  cross.appendChild(chartCard('Usuarios que facturan y anotan','Cruce entre emisores de boletas (Contable) y autores de notas (Notas)',
+    h=>{
+      const rows=conCruce.slice(0,15);
+      const c=document.createElement('div');
+      c.innerHTML=`<div style="font-size:11px;color:#5a6b85;margin-bottom:8px;display:flex;gap:14px">
+        <span><i style="display:inline-block;width:10px;height:10px;background:#22d3ee;border-radius:3px"></i> Boletas emitidas</span>
+        <span><i style="display:inline-block;width:10px;height:10px;background:#a78bfa;border-radius:3px"></i> Notas redactadas</span></div>`;
+      const m1=Math.max(...rows.map(r=>r.boletas),1), m2=Math.max(...rows.map(r=>r.notas),1);
+      rows.forEach(r=>{
+        const d=document.createElement('div');
+        d.style.cssText='display:grid;grid-template-columns:155px 1fr;gap:9px;align-items:center;margin-bottom:7px;font-size:11.5px';
+        d.innerHTML=`<div style="color:#405473;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.name)}">${esc(r.name)}</div>
+          <div style="display:grid;gap:2px">
+            <div style="height:7px;border-radius:4px;background:#e4eaf2"><div style="height:100%;width:${r.boletas/m1*100}%;background:#22d3ee;border-radius:4px"></div></div>
+            <div style="height:5px;border-radius:3px;background:#e4eaf2"><div style="height:100%;width:${r.notas/m2*100}%;background:#a78bfa;border-radius:3px"></div></div>
+          </div>`;
+        d.addEventListener('mouseenter',e=>tipShow(
+          `<b class="t-h">${esc(r.name)}</b>
+           <div class="t-row"><span class="t-k">Boletas emitidas</span> <b>${n0(r.boletas)}</b></div>
+           <div class="t-row"><span class="t-k">Notas redactadas</span> <b>${n0(r.notas)}</b></div>
+           <div class="t-row"><span class="t-k">Boletas por nota</span> <b>${n1(r.boletas/(r.notas||1))}</b></div>`,e));
+        d.addEventListener('mousemove',tipMove);
+        d.addEventListener('mouseleave',tipHide);
+        c.appendChild(d);
+      });
+      h.appendChild(c);
+    },
+    'Los usuarios que emiten boletas también redactan notas. El ratio boletas/notas muestra quién documenta menos por lo que emite.'));
+  p.appendChild(cross);
+
+  /* Alertas dinámicas */
+  p.appendChild(Object.assign(document.createElement('div'),{className:'sec-title',textContent:'Hallazgos y alertas de calidad de datos'}));
+  const alerts=document.createElement('div'); alerts.className='grid2';
+  const A_=(tone,ic,t,desc,tags)=>`<div class="alert a-${tone}"><div class="ic">${ic}</div>
+      <div><h4>${t}</h4><p>${desc}</p>${tags?`<div class="tags">${tags}</div>`:''}</div></div>`;
+
+  /* #1 Descuadre previsión vs boletas */
+  if(Math.abs(KP.difPrevBol) > 0){
+    alerts.insertAdjacentHTML('beforeend',A_('bad','!',
+      `Descuadre de ${clp(Math.abs(KP.difPrevBol))} entre previsión y boletas`,
+      `La tabla «Ingresos por tipo previsión» suma <b>${clp(Cnt.prevTotal.monto)}</b> en ${n0(Cnt.prevTotal.cantidad)} transacciones, pero las boletas emitidas suman <b>${clp(KP.ingresoDia)}</b> en ${n0(KP.boletasDia)}. La diferencia es de <b>${clp(KP.difPrevBol)}</b> y <b>${n0(KP.difPrevBolN)}</b> transacciones. Ambas tablas cuadran contra su propio TOTAL, así que la inconsistencia está entre las dos fuentes.`,
+      `<span class="xref">Contable</span>`));
+  }
+
+  /* #2 Borra + noShow > 35% */
+  const fracBorras = KP.notasAdmin ? (KP.borraCita + KP.noShow)/KP.notasAdmin : 0;
+  if(fracBorras > 0.35){
+    alerts.insertAdjacentHTML('beforeend',A_('bad','!',
+      `Borra cita y atrasos concentran el ${pc(fracBorras*100)} de las notas administrativas`,
+      `De ${n0(KP.notasAdmin)} notas administrativas, <b>${n0(KP.borraCita)}</b> son eliminaciones de cita y <b>${n0(KP.noShow)}</b> son avisos de atraso. Juntas son el <b>${pc(fracBorras*100)}</b>: el problema dominante es de agenda, no de ficha clínica.`,
+      `<span class="xref">Notas</span><span class="xref">Agenda</span>`));
+  }
+
+  /* #3 Pacientes con >=3 descuentos el mismo día */
+  const duplDia = (B.convenios||[]).reduce((a,r)=>{a[r.paciente]=(a[r.paciente]||0)+1;return a;},{});
+  const duplDiaRows = Object.entries(duplDia).filter(([,v])=>v>=3);
+  if(duplDiaRows.length){
+    const [pac,n] = duplDiaRows[0];
+    const rs = (B.convenios||[]).filter(r=>r.paciente===pac);
+    const tot = rs.reduce((a,r)=>a+r.monto,0);
+    alerts.insertAdjacentHTML('beforeend',A_('warn','!',
+      `${n} descuentos de convenio a un mismo paciente el mismo día`,
+      `${esc(pac)} tiene <b>${n}</b> descuentos bajo «${esc(rs[0].convenio)}» por <b>${clp(tot)}</b> en total. Puede ser una instalación válida de cuotas, pero conviene validarlo contra la boleta.`,
+      `<span class="xref">Becas</span>`));
+  }
+
+  /* #4 Doctor no identificable >15% informes */
+  const infTotal = KP.informes || 1;
+  const topDoc = (F.informes||[]).slice().sort((a,b)=>b.subtotal_calculado-a.subtotal_calculado)[0];
+  if(topDoc && topDoc.subtotal_calculado/infTotal > 0.15 && /VIRTUAL|SISTEMA|TOTEM/i.test(topDoc.doctor)){
+    const segundo = (F.informes||[]).slice().sort((a,b)=>b.subtotal_calculado-a.subtotal_calculado)[1];
+    alerts.insertAdjacentHTML('beforeend',A_('warn','!',
+      `«${esc(topDoc.doctor)}» concentra el ${pc(topDoc.subtotal_calculado/infTotal*100)} de los informes`,
+      `«${esc(topDoc.doctor)}» aparece como doctor con <b>${n0(topDoc.subtotal_calculado)}</b> informes impresos, el mayor valor por lejos (el segundo es ${esc(segundo?.doctor||'—')} con ${n0(segundo?.subtotal_calculado||0)}). Al no ser un profesional identificable, conviene confirmar si corresponde a una categoría agregada, no a un profesional.`,
+      `<span class="xref">Funcionarios</span>`));
+  }
+
+  /* #5 Mes parcial en la matriz de convenios */
+  const ultimoMes = (B.meses||[]).slice(-1)[0];
+  if(ultimoMes){
+    const montoUlt = (B.mensual||[]).find(r=>String(r.tipo).toUpperCase()==='TODOS')?.valores.slice(-1)[0]||0;
+    alerts.insertAdjacentHTML('beforeend',A_('info','i',
+      `${esc(ultimoMes)} es un mes parcial en la matriz de convenios`,
+      `La matriz de 6 meses cierra el ${FECHA_LOTE}, por lo que la columna ${esc(ultimoMes)} (${clp(montoUlt)}) solo cubre los días transcurridos. El promedio mensual excluye ese mes a propósito.`,
+      `<span class="xref">Becas</span>`));
+  }
+
+  /* #6 Citas por previsión ≠ citas sin bloqueo */
+  if(KP.citasPrevMan && KP.citasPrevMan !== KP.citasUtiles){
+    alerts.insertAdjacentHTML('beforeend',A_('warn','!',
+      `Tres cifras distintas de «citas» en el mismo correo`,
+      `El correo de Agenda reporta <b>${n0(KP.citasUtiles)}</b> citas del día sin bloqueo, <b>${n0(KP.citasPrevMan)}</b> en la tabla «Citas por tipo previsión» y <b>${n0(KP.manana)}</b> «Reservada» para mañana. La tabla de previsión no declara a qué fecha corresponde, por lo que su total no se puede atribuir con certeza a ningún día. En este informe se muestra tal cual, sin reconciliarla.`,
+      `<span class="xref">Agenda</span>`));
+  }
+
+  /* #7 Etiquetas de estado repetidas */
+  if(estadosRepetidos.length){
+    const [lab,vals] = estadosRepetidos[0];
+    alerts.insertAdjacentHTML('beforeend',A_('warn','!',
+      `«${esc(lab)}» aparece duplicada en el estado de citas`,
+      `La tabla «Estado de citas hoy» trae ${vals.length} filas con la etiqueta «${esc(lab)}», con valores ${vals.join(' y ')}. El correo las separa sin explicarlo. Ambas se conservan en la tabla (para no alterar la fuente) y se suman en el gráfico de distribución.`,
+      `<span class="xref">Agenda</span>`));
+  }
+
+  /* #8 Todo cuadra */
+  alerts.insertAdjacentHTML('beforeend',A_('ok','✓',
+    'Todas las tablas cuadran contra sus totales',
+    `Verificación de integridad: deuda, ingresos por pago, ingresos por previsión, boletas, estado de agenda, citas por previsión, convenios, informes (${n0(KP.informes)}), productos (${n0(KP.productos)}), acciones (${n0(KP.acciones)}) y notas (${n0(KP.notasAdmin)} + ${n0(KP.notasDoc)}) coinciden exactamente con el TOTAL declarado en cada correo.`,
+    `<span class="xref">Los ${n0(D.meta?.correos||0)} correos</span>`));
+
+  p.appendChild(alerts);
+
+  p.appendChild(Object.assign(document.createElement('div'),{className:'sec-title',textContent:'Visuales consolidados'}));
+  const g3=document.createElement('div'); g3.className='grid2';
+  g3.appendChild(chartCard('Top 15 previsiones por facturación',`Del total de ${clp(KP.ingresoDia)} del día`,
+    h=>barH(h,prevRows.slice(0,15).map(r=>({...r,value:r.value,cantidad:r.cantidad})),{fmt:clpk,labelW:230,
+      tip:r=>`<div class="t-row"><span class="t-k">Ingreso</span> <b>${clp(r.value)}</b></div>
+        <div class="t-row"><span class="t-k">Transacciones</span> <b>${n0(r.cantidad)}</b></div>
+        <div class="t-row"><span class="t-k">Ticket promedio</span> <b>${clp(r.value/(r.cantidad||1))}</b></div>
+        <div class="t-row"><span class="t-k">Del ingreso total</span> <b>${pc(KP.ingresoDia?r.value/KP.ingresoDia*100:0)}</b></div>`}),
+    'La barra representa el monto; el detalle por transacción está en el tooltip.'));
+  g3.appendChild(chartCard('Top 15 usuarios por monto facturado',`De los ${clp(KP.ingresoDia)} del día`,
+    h=>barH(h,boletaRows.slice(0,15),{fmt:clpk,labelW:200,
+      tip:r=>`<div class="t-row"><span class="t-k">Monto</span> <b>${clp(r.value)}</b></div>
+        <div class="t-row"><span class="t-k">Boletas</span> <b>${n0(r.cantidad)}</b></div>
+        <div class="t-row"><span class="t-k">Ticket promedio</span> <b>${clp(r.value/(r.cantidad||1))}</b></div>`}),
+    `Los 5 primeros concentran el ${pc(KP.conc5)} del ingreso diario.`));
+  g3.appendChild(chartCard('Deuda acumulada y proyección de pago','Saldo histórico frente a la recaudación diaria',
+    h=>lineChart(h,[
+      {name:'Deuda acumulada',color:'#fb7185',data:Cnt.deuda.map(d=>({label:d.mes,value:d.deuda}))},
+    ],{fmt:v=>'$'+(v/1e9).toFixed(2)+'MM'}),
+    `Al ritmo de recaudación actual, se requerirían ${n1(KP.diasDeuda)} días de ingreso íntegro para cubrir la deuda (derivación propia, no está en los correos).`));
+  g3.appendChild(chartCard(`Composición de las ${n0(KP.totalNotas)} notas`,'Peso de cada tipo de anotación en ficha',
+    h=>donut(h,notasTipoRows.slice(0,7).map((r,i)=>({label:r.label,value:r.value,color:PAL[i%PAL.length]})),
+      {fmt:n0,center:n0(KP.totalNotas),centerLabel:'NOTAS',
+       tip:r=>`<div class="t-row"><span class="t-k">Del total</span> <b>${pc(KP.totalNotas?r.value/KP.totalNotas*100:0)}</b></div>`}),
+    'Se muestran los tipos más frecuentes; el resto corresponde a categorías menores.'));
+  p.appendChild(g3);
+
+  p.appendChild(Object.assign(document.createElement('div'),
+    {className:'sec-title',textContent:'Apendice: contenido original de los correos'}));
+  const ap=document.createElement('div'); ap.className='alert a-info';
+  ap.innerHTML=`<div class="ic">i</div><div>
+    <h4>Alcance de los datos mostrados</h4>
+    <p>Las tablas y gráficos de este informe provienen de los correos «Resumen Control». El parser de este documento
+    ordena esa información en tablas, pero no puede representar estructuras que los correos expresan solo como texto plano:
+    por ejemplo las líneas de subtotal intercaladas de las tablas largas del correo de Notas. Para que el documento sea
+    completo, los correos originales se adjuntan íntegros más abajo, sin recortes ni muestreo.</p></div>`;
+  p.appendChild(ap);
+  p.appendChild(rawCard());
+  return p;
+});
+
+/* ==================================================================
+   6. Apendice: texto original completo de los 6 correos
+   ================================================================== */
+function rawCard(){
+  const box=document.createElement('details');
+  box.className='raw';
+  const RIDS=(D.meta&&D.meta.raw_ids)||[];
+  const totChars=RIDS.reduce((a,id)=>a+(D.raw[id]||'').length,0);
+  box.innerHTML=`<summary>Texto original completo de los ${n0(D.meta?.correos||0)} correos
+    <span class="raw-hint">${n0(totChars)} caracteres · sin recortes</span></summary>`;
+  const nav=document.createElement('div'); nav.className='raw-nav';
+  const ids=RIDS;
+  ids.forEach((id,k)=>{
+    const b=document.createElement('button');
+    b.textContent=(D.meta.raw_meta&&D.meta.raw_meta[k])?D.meta.raw_meta[k].label:id;
+    b.addEventListener('click',()=>{
+      const pre=box.querySelector('pre[data-raw="'+id+'"]');
+      if(pre) pre.scrollIntoView({behavior:'smooth',block:'start'});
+    });
+    nav.appendChild(b);
+  });
+  box.appendChild(nav);
+  const btnHi=document.createElement('button');
+  btnHi.textContent='Resaltar lineas de total';
+  btnHi.title='Cambia la vista a una copia resaltada. El texto original no se modifica.';
+  btnHi.addEventListener('click',()=>{
+    const on=btnHi.dataset.on==='1';
+    btnHi.dataset.on=on?'0':'1';
+    btnHi.textContent=on?'Resaltar lineas de total':'Mostrar texto sin resaltar';
+    box.querySelectorAll('pre[data-raw]').forEach(pre=>{
+      if(on) pre.textContent=pre.textContent;
+      else pre.innerHTML=highlightRaw(pre.textContent);
+    });
+  });
+  nav.appendChild(btnHi);
+
+  ids.forEach((id,k)=>{
+    const m=(D.meta.raw_meta&&D.meta.raw_meta[k])||{label:id,chars:0,lines:0};
+    const d=document.createElement('details');
+    d.className='raw';
+    const head=document.createElement('summary');
+    head.textContent=m.label;
+    const hint=document.createElement('span');
+    hint.className='raw-hint';
+    hint.textContent=`${n0((D.raw[id]||'').length)} caracteres · ${n0((D.raw[id]||'').split('\n').length)} lineas`;
+    head.appendChild(hint);
+    d.appendChild(head);
+    const pre=document.createElement('pre');
+    pre.dataset.raw=id;
+    pre.textContent=D.raw[id]||'';
+    d.appendChild(pre);
+    box.appendChild(d);
+  });
+  return box;
+}
+function highlightRaw(t){
+  return esc(t).replace(/^.*(TOTAL|Total|total).*$/gm,'<mark>$&</mark>');
+}
+
+/* ==================================================================
+   7. Montaje
+   ================================================================== */
+const panelsEl=$('#panels'), tabsEl=$('#tabs');
+TABS.forEach((t,i)=>{
+  const b=document.createElement('button');
+  b.setAttribute('role','tab');
+  b.setAttribute('aria-selected', i===0?'true':'false');
+  b.textContent=t.label;
+  b.addEventListener('click',()=>select(i));
+  tabsEl.appendChild(b);
+
+  const sec=document.createElement('section');
+  sec.className='panel'+(i===0?' on':'');
+  sec.id='p-'+t.id;
+  sec.setAttribute('role','tabpanel');
+  panelsEl.appendChild(sec);
+});
+
+const built=new Set();
+let curTab=-1;
+function select(i){
+  const t=TABS[i];
+  if(!t) return;
+  curTab=i;
+  $$('button',tabsEl).forEach((b,j)=>b.setAttribute('aria-selected', j===i?'true':'false'));
+  $$('.panel',panelsEl).forEach((s,j)=>s.classList.toggle('on', j===i));
+  if(!built.has(t.id)){
+    built.add(t.id);
+    $('#p-'+t.id).appendChild(t.build());
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+  try{ history.replaceState(null,'','#'+t.id); }catch(e){}
+}
+window.addEventListener('hashchange',()=>{
+  const i=TABS.findIndex(t=>t.id===location.hash.slice(1));
+  if(i>=0 && i!==curTab) select(i);
+});
+
+(function(){
+  const total=(D.meta&&D.meta.filas_totales)||0;
+  $('#chip-integrity').innerHTML=
+    `<span class="dot" style="background:#047857;box-shadow:0 0 0 3px #04785722"></span>
+     ${n0(total)} filas extraídas · ${n0(D.meta?.correos||0)} correos íntegros`;
+})();
+
+(function(){
+  const h=location.hash.slice(1);
+  const i=TABS.findIndex(t=>t.id===h);
+  select(i>=0?i:0);
+})();
+</script>
+</body>
+</html>

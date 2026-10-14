@@ -1,0 +1,37 @@
+
+
+
+Atte
+Rodrigo Mansilla
+
+￼
+
+> Inicio del mensaje reenviado:
+> 
+> De: info@ino.cl
+> Asunto: Resumen Procesos 24/09/2026
+> Fecha: 24 de septiembre de 2026 a las 1:02:03 a.m. CLST
+> Para: rodrigolp60@hotmail.com, claudio.perez@ino.cl, rodrigo.mansilla@ino.cl, ricardo.fonfria@ino.cl, maria.isabel.pizarro@ino.cl
+> 
+> 
+> Fecha	Hora	Proceso	Cantidad
+> 24/09/2026 	01:00:14 	Actualiza Injustificados 	507 
+> 24/09/2026 	01:00:15 	Actualiza cita derivada pero no terminada 	2 
+> 24/09/2026 	01:00:15 	Cierra Chat con Solicitud de Cierre 	0 
+> 24/09/2026 	01:00:49 	Recordatorio de cita 1 dia(s) 	2511 
+> 24/09/2026 	01:00:56 	Recordatorio de cita 7 dia(s) 	929 
+> 24/09/2026 	01:01:19 	Recordatorio de cita 3 dia(s) 	0 
+> 24/09/2026 	01:01:23 	Recordatorio de cita 60 dia(s) 	28 
+> 24/09/2026 	01:01:25 	Recordatorio de cita 0 dia(s) 	0 
+> 24/09/2026 	01:00:14 	Actualiza cita no atiende llamado asistente 	4 
+> 24/09/2026 	01:00:14 	Actualiza cita no atiende llamado recepcion 	2 
+> 24/09/2026 	01:01:21 	Recordatorio de cita 90 dia(s) 	17 
+> 
+
+
+-- 
+Este correo electrónico contiene información legal confidencial y 
+privilegiada. Si Usted no es el destinatario a quien se desea enviar este 
+mensaje, tendrá prohibido darlo a conocer a persona alguna, así como a 
+reproducirlo o copiarlo. Si recibe este mensaje por error, favor de 
+notificarlo al remitente de inmediato y desecharlo de su sistema.

@@ -1,0 +1,64 @@
+"""TODO: módulo de contratos Pydantic del bloque <DOMINIO>.
+
+Paso 2 de ../PLANTILLA_CAPACIDAD.md. Tres modelos por capability: entrada, item de
+fila y salida. Todas las descripciones son obligatorias: las lee el agente.
+"""
+
+from datetime import date
+from decimal import Decimal
+
+from pydantic import BaseModel, ConfigDict, Field
+
+
+# --------------------------------------------------------------------------- #
+# Si la capability NO acepta argumentos: input vacío con extra="forbid".
+# (Borrar el modelo con fecha que sigue y usar este.)
+# --------------------------------------------------------------------------- #
+
+# class ConsultarTodoInput(BaseModel):
+#     """Contrato de entrada vacío: la consulta no admite ningún parámetro."""
+#
+#     model_config = ConfigDict(extra="forbid")
+
+
+class ConsultarTodoInput(BaseModel):
+    # TODO: un Field por parámetro. Cada descripción dice el formato y por qué
+    # existe. `date` valida el formato en vez de recibir un string cualquiera.
+    fecha: date = Field(
+        ...,
+        description="Fecha obligatoria (YYYY-MM-DD). TODO: por qué la exige el legacy.",
+    )
+    # TODO: filtros opcionales. Si son de un conjunto cerrado, usá Literal y
+    # describí cada valor literal del maestro sin traducirlos.
+    # origen: Literal["CAJA", "TOTEM", "WEBPAY"] | None = Field(
+    #     None,
+    #     description="Canal opcional. Si se omite, devuelve los tres.",
+    # )
+
+
+class TodoItem(BaseModel):
+    # TODO: descripción por campo. Nada de nombres de columna crudos: hay un test
+    # que falla si PAC_CODIGO, COD_USUARIO, la tabla o el esquema se cuelan acá.
+    campo: str = Field(..., description="TODO")
+    cantidad: int
+    monto: Decimal
+
+
+class ConsultarTodoOutput(BaseModel):
+    # TODO: fecha solo si la entrada la tiene.
+    fecha: date
+    items: list[TodoItem] = Field(
+        ...,
+        description="TODO: qué filas trae, en qué orden, y qué NO aparecen.",
+    )
+    # TODO: los totales los calcula el service, nunca el agente (R9).
+    total_cantidad: int
+    total_monto: Decimal
+
+    # TODO: si el resultado admite otra lectura, cerrá acá. El ejemplo canónico es
+    # el `base` de pacientes: sin él, el agente reporta 2.307 pacientes activos
+    # cuando son 340.
+    # base: Literal["TODO"] = Field(
+    #     ...,
+    #     description="Fija en el payload de qué universo habla el resultado.",
+    # )

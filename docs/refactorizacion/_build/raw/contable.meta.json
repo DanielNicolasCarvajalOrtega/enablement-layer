@@ -1,0 +1,46 @@
+{
+  "name": "contable",
+  "mimeTree": [
+    {
+      "mimeType": "",
+      "filename": "",
+      "size": null,
+      "hasData": false,
+      "headers": []
+    },
+    {
+      "mimeType": "multipart/alternative",
+      "filename": "",
+      "size": 0,
+      "hasData": false,
+      "headers": []
+    },
+    {
+      "mimeType": "text/plain",
+      "filename": "",
+      "size": 4225,
+      "hasData": true,
+      "headers": []
+    },
+    {
+      "mimeType": "text/html",
+      "filename": "",
+      "size": 39543,
+      "hasData": true,
+      "headers": []
+    },
+    {
+      "mimeType": "image/png",
+      "filename": "",
+      "size": 42545,
+      "hasData": false,
+      "headers": []
+    }
+  ],
+  "plainBytes": 4225,
+  "plainCrlf": 130,
+  "plainLf": 130,
+  "htmlBytes": 52724,
+  "subject": "Fwd: Resumen Control (Contable) 23/09/2026",
+  "threadId": "1a0d3e6f55b9e025"
+}

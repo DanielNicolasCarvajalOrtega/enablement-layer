@@ -1,0 +1,82 @@
+{
+  "name": "procesos",
+  "mimeTree": [
+    {
+      "mimeType": "multipart/related",
+      "filename": "",
+      "size": 0,
+      "hasData": false,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "multipart/related;\r\n\ttype=\"text/html\";\r\n\tboundary=\"Apple-Mail=_2A07842F-A6CA-4E83-8A8F-62795136E8D6\""
+        }
+      ]
+    },
+    {
+      "mimeType": "multipart/alternative",
+      "filename": "",
+      "size": 0,
+      "hasData": false,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "multipart/alternative;\r\n\tboundary=\"Apple-Mail=_509038FC-72D6-44F7-AF5B-081509826AEB\""
+        }
+      ]
+    },
+    {
+      "mimeType": "text/plain",
+      "filename": "",
+      "size": 1439,
+      "hasData": true,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "text/plain; charset=\"UTF-8\""
+        },
+        {
+          "name": "Content-Transfer-Encoding",
+          "value": "quoted-printable"
+        }
+      ]
+    },
+    {
+      "mimeType": "text/html",
+      "filename": "",
+      "size": 10426,
+      "hasData": true,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "text/html; charset=\"UTF-8\""
+        },
+        {
+          "name": "Content-Transfer-Encoding",
+          "value": "quoted-printable"
+        }
+      ]
+    },
+    {
+      "mimeType": "image/png",
+      "filename": "firmaRodrigoMansilla.png",
+      "size": 40559,
+      "hasData": true,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "image/png;\r\n\tname=\"firmaRodrigoMansilla.png\""
+        },
+        {
+          "name": "Content-Transfer-Encoding",
+          "value": "base64"
+        }
+      ]
+    }
+  ],
+  "plainBytes": 1439,
+  "plainCrlf": 37,
+  "plainLf": 37,
+  "htmlBytes": 14627,
+  "threadId": "1a0d3e93af710ff9"
+}

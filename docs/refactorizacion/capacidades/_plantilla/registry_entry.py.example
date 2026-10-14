@@ -1,0 +1,41 @@
+# Bloque para pegar en application/registry.py, dentro de CAPABILITIES.
+#
+# Paso 1 de ../PLANTILLA_CAPACIDAD.md. _validate() corre al importar el módulo:
+# si este bloque está mal lo sabés acá, no en el paso 7.
+#
+# Tipos que ya están importados en ese archivo: OperationMode.
+# Para el campo `roles` conviene declarar la tupla constante al lado de
+# CONTABILIDAD_ROLES / PACIENTES_ROLES, con el comentario de por qué esos roles.
+
+"<DOMINIO>.<NOMBRE_SNAKE>": CapabilityContract(
+    id="<DOMINIO>.<NOMBRE_SNAKE>",
+    # Nombre MCP. Sin sufijo _vN (R10): la versión viaja en el payload.
+    # `mcp_name` devuelve este mismo valor.
+    name="consultar_<NOMBRE_SNAKE>",
+    # Lo que se ve en annotations.title de la tool y en summary de OpenAPI.
+    title="<Título corto, legible>",
+    mode=OperationMode.READ,
+    description=(
+        # TODO: qué hace + cuándo usarla, en lenguaje de negocio, sin jerga de
+        # infraestructura (nada de SQL, tablas, ni nombres de columnas: hay un
+        # test que filtra esos literales).
+        "TODO. ÚSALA cuando TODO. "
+        "<parámetro> es obligatorio (YYYY-MM-DD). Solo lectura."
+    ),
+    usage_notes=(
+        # TODO: cuándo NO usarla, citando el name real de las capabilities
+        # vecinas, más la advertencia semántica (qué NO es el número) y los
+        # sesgos del legacy que se replican a propósito.
+        "NO la uses para TODO (consultar_TODO), ni para TODO (consultar_TODO)."
+    ),
+    rest_method="GET",
+    rest_path="/api/<dominio>/<kebab-case>",   # con guiones, en minúscula
+    roles=TODO_ROLES,                          # ⊆ KNOWN_ROLES, no vacío
+    oracle_sql_id="TODO",                      # Q<n> | ENC.<NOMBRE> | el propio
+    legacy_method="TODO",                      # Clase.método o archivo.jsp
+    legacy_lines="TODO",                       # a-b
+    # operational | financial | financial_pii | clinical
+    data_profile="TODO",
+    # ({},) si no acepta argumentos. Un solo dict por variante de entrada.
+    examples=({"fecha": "YYYY-MM-DD"},),
+),

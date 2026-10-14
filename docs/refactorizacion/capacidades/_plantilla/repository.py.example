@@ -1,0 +1,85 @@
+"""TODO: adapter Oracle del bloque <DOMINIO>.
+
+Paso 4 de ../PLANTILLA_CAPACIDAD.md — el paso donde más se falla.
+
+Las reglas del SQL no son estéticas:
+  - bind parameters, nunca concatenación (el legacy concatena y es vulnerable)
+  - owner explícito en toda tabla (DENT.boleta, no boleta)
+  - nunca USURUT ni USULOGIN en el select
+  - group by por la columna real, no por el alias del select (ORA-00904)
+  - banda horaria vs igualdad exacta: copiar la del legacy, no "normalizarla"
+"""
+
+import oracledb
+
+from application.errors import InfrastructureError
+from application.<dominio>.ports import TodoRow, TodoPort
+from database import get_pool
+
+# TODO_SQL · <Clase.método> · fuente: <ruta:líneas>
+#
+# TODO: por qué esta query es esta y no una "mejorada" (V2 §0.1: no innovar).
+#
+# Decisiones del texto original que se replican tal cual:
+#   1. TODO: filtro de fecha — banda horaria 00:00:00-23:59:59, igualdad exacta
+#      o trunc(). Son 3 comportamientos distintos y elijo el que usa el legacy.
+#   2. TODO: estados incluidos (ACT, o ANU/DEV/NCI, o ninguno).
+#   3. TODO: unión con la réplica DENT_CICLO, o por qué no aplica.
+#   4. TODO: agrupación por columna real.
+#   5. TODO: lo que el legacy NO filtra y esta query tampoco.
+TODO_SQL = """
+select ci.NOM_CIU campo,
+       count(distinct p.PAC_CODIGO) cantidad,
+       sum(bo.MONTO) monto
+from DENT.TABLA bo
+join DENT.OTRA o on o.COD = bo.COD
+where bo.FEC_BOL >= to_date(:fecha || ' 00:00:00','YYYY-MM-DD HH24:MI:SS')
+  and bo.FEC_BOL <= to_date(:fecha || ' 23:59:59','YYYY-MM-DD HH24:MI:SS')
+  and bo.IND_ESTADO = 'ACT'
+group by ci.NOM_CIU
+"""
+
+
+class TodoRepository(TodoPort):
+    """Adapter Oracle del bloque <DOMINIO>."""
+
+    # Expuesta como atributo de clase: tests/test_repository_sql.py la levanta por
+    # este nombre para aplicarle las guardas de fidelidad.
+    TODO_SQL = TODO_SQL
+
+    def __init__(self, pool: oracledb.ConnectionPool | None = None):
+        self._pool = pool
+
+    @property
+    def pool(self) -> oracledb.ConnectionPool:
+        # Lazy: sin esto la suite de unitarios exigiría .env con DSN.
+        return self._pool or get_pool()
+
+    def _fetchall(self, sql: str, **binds):
+        """Traduce cualquier fallo a UNAVAILABLE.
+
+        Se copia tal cual de las capacidades existentes. Es el único lugar donde un
+        fallo de infraestructura se convierte en UNAVAILABLE: si esto se reimplementa
+        distinto, una caída de Oracle se disfraza de "tabla vacía" y R8 se rompe.
+        """
+        try:
+            with self.pool.acquire() as conn:     # nunca conexión por request
+                with conn.cursor() as cur:
+                    cur.execute(sql, **binds)
+                    return cur.fetchall()
+        except Exception as exc:
+            raise InfrastructureError() from exc
+
+    def consultar_todo(self, fecha) -> list[TodoRow]:
+        # TODO: un bind por cada :param del SQL. `fecha.isoformat()` porque
+        # oracledb no convierte `date` a string solo.
+        filas = self._fetchall(self.TODO_SQL, fecha=fecha.isoformat())
+        return [
+            TodoRow(
+                # Un None acá saldría como "None" en el payload del agente.
+                campo="" if r[0] is None else str(r[0]),
+                cantidad=int(r[1]),
+                monto=Decimal(r[2]),
+            )
+            for r in filas
+        ]

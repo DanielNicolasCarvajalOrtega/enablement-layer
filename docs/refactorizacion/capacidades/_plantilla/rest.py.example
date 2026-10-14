@@ -1,0 +1,40 @@
+"""TODO: adapter REST del bloque <DOMINIO>.
+
+Paso 6 de ../PLANTILLA_CAPACIDAD.md. Delgado: no lógica de negocio, no SQL, no
+roles escritos a mano. Lo que hay que saber vive en el registry y en el service.
+
+Si el dominio es nuevo, falta además:
+  · composition.py  → instanciar el repo y el service
+  · app.py          → include_router + `from adapters.mcp import <dominio>` con noqa
+"""
+
+from datetime import date
+
+from fastapi import APIRouter, Depends, Query
+
+from application.<dominio>.models import ConsultarTodoOutput
+from composition import <dominio>_service
+from security import require_contract
+
+router = APIRouter(prefix="/api/<dominio>", tags=["<dominio>"])
+
+
+@router.get(
+    "/<kebab-case>",
+    response_model=ConsultarTodoOutput,
+    # El summary y el `title` del registry son el mismo string.
+    summary="TODO título",
+)
+def consultar_todo(
+    # TODO: borrar el Query completo si la capability no acepta parámetros.
+    fecha: date = Query(..., description="Fecha obligatoria (YYYY-MM-DD)."),
+    # Los roles salen del registry. NO copiarlos acá: se desincronizan.
+    identity: dict = Depends(require_contract("<dominio>.<nombre_snake>")),
+):
+    """TODO: qué reproduce + la advertencia semántica clave.
+
+    Lo que el agente realmente lee es el `description` + `usage_notes` del
+    registry; este docstring es para quien abre el código.
+    """
+    # `identity` no se usa en el cuerpo: está por la dependencia. No borrarlo.
+    return <dominio>_service.consultar_todo(fecha)

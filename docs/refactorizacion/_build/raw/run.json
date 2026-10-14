@@ -1,0 +1,90 @@
+{
+  "generatedAt": "2026-09-30T15:35:53Z",
+  "correos": 6,
+  "order": [
+    "contable",
+    "agenda",
+    "becas",
+    "procesos",
+    "funcionarios",
+    "notas"
+  ],
+  "items": [
+    {
+      "label": "Contable",
+      "name": "contable",
+      "filename": "contable.txt",
+      "bytes": 4225,
+      "lines": 130,
+      "crlf": 130,
+      "lf": 130,
+      "threadId": "1a0d3e6f55b9e025",
+      "subject": "Fwd: Resumen Control (Contable) 23/09/2026"
+    },
+    {
+      "label": "Agenda",
+      "name": "agenda",
+      "filename": "agenda.txt",
+      "bytes": 2545,
+      "lines": 86,
+      "crlf": 86,
+      "lf": 86,
+      "threadId": "1a0d3e739fbb5894",
+      "subject": null
+    },
+    {
+      "label": "Becas",
+      "name": "becas",
+      "filename": "becas.txt",
+      "bytes": 3383,
+      "lines": 58,
+      "crlf": 58,
+      "lf": 58,
+      "threadId": "1a0d3e7e8df9c160",
+      "subject": null
+    },
+    {
+      "label": "Procesos",
+      "name": "procesos",
+      "filename": "procesos.txt",
+      "bytes": 1439,
+      "lines": 37,
+      "crlf": 37,
+      "lf": 37,
+      "threadId": "1a0d3e93af710ff9",
+      "subject": null
+    },
+    {
+      "label": "Funcionarios",
+      "name": "funcionarios",
+      "filename": "funcionarios.txt",
+      "bytes": 31007,
+      "lines": 1001,
+      "crlf": 1001,
+      "lf": 1001,
+      "threadId": "1a0d3e8886aca81c",
+      "subject": null
+    },
+    {
+      "label": "Notas",
+      "name": "notas",
+      "filename": "notas.txt",
+      "bytes": 294961,
+      "lines": 4769,
+      "crlf": null,
+      "lf": null,
+      "threadId": null,
+      "subject": null
+    }
+  ],
+  "raw_ids": [
+    "d006b89b5f1f1e72dcf4cf2641fc5618b7b26a29",
+    "534ceaebe8ae7b1f07cff3b3ce4bc56aeb8ae156",
+    "041ddfffb6e11eca18613bf58854c8a9b724bd04",
+    "6a7e1c105a02cfc30d6f0df9945880059887bad5",
+    "ea4fba2380fb8a094895a657ebdffd41d0c88995",
+    "01c2dd267cd1d995f8b693e5e481c2c29b601ee3"
+  ],
+  "raw_chars": 337560,
+  "raw_lines": 6081
+}

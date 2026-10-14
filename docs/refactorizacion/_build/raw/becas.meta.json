@@ -1,0 +1,82 @@
+{
+  "name": "becas",
+  "mimeTree": [
+    {
+      "mimeType": "multipart/related",
+      "filename": "",
+      "size": 0,
+      "hasData": false,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "multipart/related;\r\n\ttype=\"text/html\";\r\n\tboundary=\"Apple-Mail=_98848C6D-A26C-424D-B4D7-3D881710AFD6\""
+        }
+      ]
+    },
+    {
+      "mimeType": "multipart/alternative",
+      "filename": "",
+      "size": 0,
+      "hasData": false,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "multipart/alternative;\r\n\tboundary=\"Apple-Mail=_47B8EF65-35E7-4B05-B5E5-1AF463010D5D\""
+        }
+      ]
+    },
+    {
+      "mimeType": "text/plain",
+      "filename": "",
+      "size": 3383,
+      "hasData": true,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "text/plain; charset=\"UTF-8\""
+        },
+        {
+          "name": "Content-Transfer-Encoding",
+          "value": "quoted-printable"
+        }
+      ]
+    },
+    {
+      "mimeType": "text/html",
+      "filename": "",
+      "size": 13851,
+      "hasData": true,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "text/html; charset=\"UTF-8\""
+        },
+        {
+          "name": "Content-Transfer-Encoding",
+          "value": "quoted-printable"
+        }
+      ]
+    },
+    {
+      "mimeType": "image/png",
+      "filename": "firmaRodrigoMansilla.png",
+      "size": 36137,
+      "hasData": true,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "image/png;\r\n\tname=\"firmaRodrigoMansilla.png\""
+        },
+        {
+          "name": "Content-Transfer-Encoding",
+          "value": "base64"
+        }
+      ]
+    }
+  ],
+  "plainBytes": 3383,
+  "plainCrlf": 58,
+  "plainLf": 58,
+  "htmlBytes": 19951,
+  "threadId": "1a0d3e7e8df9c160"
+}

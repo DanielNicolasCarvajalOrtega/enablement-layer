@@ -1,0 +1,63 @@
+"""TODO: lógica de negocio del bloque <DOMINIO>.
+
+Paso 5 de ../PLANTILLA_CAPACIDAD.md. Acá vive el negocio; el SQL no.
+
+Las decisiones que no son obvias llevan comentario que las justifica. Si un revisor
+tiene que preguntar por qué se ordena así, falta el comentario.
+"""
+
+from datetime import date
+from decimal import Decimal
+
+from pydantic import ValidationError as PydanticValidationError
+
+from application.<dominio>.models import (
+    ConsultarTodoInput,
+    ConsultarTodoOutput,
+    TodoItem,
+)
+from application.<dominio>.ports import TodoPort
+from application.errors import NotFoundError, ValidationError
+
+
+class TodoService:
+    def __init__(self, repo: TodoPort):
+        self.repo = repo
+
+    def consultar_todo(self, fecha) -> ConsultarTodoOutput:
+        try:
+            entrada = ConsultarTodoInput(fecha=fecha)
+        except PydanticValidationError as exc:
+            # El mensaje nombra SOLO el campo que falló. Si se arma una lista
+            # fija con todos los campos de la firma, un fallo de origen le pide
+            # al agente arreglar un campo que estaba bien (ver H1 de la plantilla).
+            raise ValidationError("fecha es obligatoria y debe ser YYYY-MM-DD.") from exc
+
+        rows = self.repo.consultar_todo(entrada.fecha)
+
+        if not rows:
+            # NO_DATA, no UNAVAILABLE: la query corrió y no devolvió nada (R8).
+            raise NotFoundError(
+                "No hay TODO para la fecha pedida. Resultado válido, no es un fallo."
+            )
+
+        # TODO: orden.
+        #   · Si el SQL NO trae ORDER BY → ordenar acá con una clave estable y
+        #     comentar cuál es.
+        #   · Si el SQL YA trae un orden total → NO ordenar acá. Un sorted() en
+        #     Python haría que el contrato dependa del NLS_SORT de Oracle en vez
+        #     del texto original. Ver tests/test_service_pacientes.py
+        #     ::test_no_reordena_una_entrada_desordenada.
+        items = [
+            TodoItem(campo=r.campo, cantidad=r.cantidad, monto=r.monto)
+            for r in rows
+        ]
+
+        return ConsultarTodoOutput(
+            fecha=entrada.fecha,
+            items=items,
+            # R9: el total se calcula acá, nunca se le pide la suma al agente.
+            # Decimal("0.00") en vez de 0 para no perder la escala monetaria.
+            total_cantidad=sum(i.cantidad for i in items),
+            total_monto=sum((i.monto for i in items), Decimal("0.00")),
+        )
